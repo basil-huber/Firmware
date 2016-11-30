@@ -151,7 +151,7 @@ set_target_properties(sitl_gazebo PROPERTIES EXCLUDE_FROM_ALL TRUE)
 # create targets for each viewer/model/debugger combination
 set(viewers none jmavsim gazebo replay)
 set(debuggers none gdb lldb ddd valgrind)
-set(models none iris iris_opt_flow tailsitter standard_vtol plane solo typhoon_h480)
+set(models none iris iris_opt_flow dronecourse tailsitter standard_vtol plane solo typhoon_h480)
 set(all_posix_vmd_make_targets)
 foreach(viewer ${viewers})
 	foreach(debugger ${debuggers})
