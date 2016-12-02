@@ -674,12 +674,13 @@ void BlockLocalPositionEstimator::detectDistanceSensors()
 
 			if (s->get().timestamp == 0) { continue; }
 
+			bool isFacingDownward = s->get().orientation == 8 || s->get().orientation == 0;	// true if 	MAV_SENSOR_ROTATION_NONE or MAV_SENSOR_ROTATION_ROLL_180
 			if (s->get().type == \
 			    distance_sensor_s::MAV_DISTANCE_SENSOR_LASER &&
+			    isFacingDownward &&
 			    _sub_lidar == NULL) {
 				_sub_lidar = s;
 				mavlink_and_console_log_info(&mavlink_log_pub, "[lpe] Lidar detected with ID %i", i);
-
 			} else if (s->get().type == \
 				   distance_sensor_s::MAV_DISTANCE_SENSOR_ULTRASOUND &&
 				   _sub_sonar == NULL) {
