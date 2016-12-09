@@ -42,8 +42,10 @@
 #pragma once
 
 #include <uORB/Subscription.hpp>
+#include <uORB/Publication.hpp>
 #include <uORB/topics/distance_sensor.h>
 #include <uORB/topics/vehicle_attitude.h>
+#include <uORB/topics/vehicle_local_position_setpoint.h>
 #include "DistanceSensor.hpp"
 
 class DistanceSensorListener
@@ -64,6 +66,7 @@ private:
 	static const unsigned SUBSCRIB_INTERVAL  = 1000/100;
 
 	uORB::Subscription<vehicle_attitude_s> _attitude_subscription;
+	uORB::Subscription<vehicle_local_position_s> _local_pos_subscription;
 	uORB::Subscription<distance_sensor_s> _subscriptions[N_SUBS];
 	uint64_t 							  _timestamps[N_SUBS];
 	DistanceSensor 						  _sensorSlots[N_SENS_MAX];

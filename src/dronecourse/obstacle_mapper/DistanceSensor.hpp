@@ -42,6 +42,9 @@
 #pragma once
 
 #include <stdint.h>
+#include "matrix/Quaternion.hpp"
+
+typedef matrix::Vector<float,3> Position;
 
 class DistanceSensor
 {
@@ -55,11 +58,17 @@ public:
 						float max_distance,
 						float current_distance,
 						float covariance,
-						uint64_t timestamp);
+						uint64_t timestamp,
+						matrix::Dcm<float> vehicle_attitude,
+						Position vehicle_position_lf);
 
 	uint8_t getId() const {return _id;}
 
 	float getCurrentDistance() const {return _current_distance;}
+
+	const Position &getObstaclePositionLf() const {return _obstacle_position_lf;}
+
+	const Position &getPositionLf() const {return _position_lf;}
 
 	uint64_t getLastUpdate() const  {return _last_update;}
 
@@ -79,4 +88,11 @@ private:
 	uint8_t  _id;
 	bool 	 _isInitialized;
 	bool 	 _isActive;
+
+	matrix::Dcm<float> _attitude;
+
+	Position _position_bf;
+	Position _position_lf;
+	Position _obstacle_position_bf;
+	Position _obstacle_position_lf;
 };

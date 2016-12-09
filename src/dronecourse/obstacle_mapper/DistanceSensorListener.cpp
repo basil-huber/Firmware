@@ -44,6 +44,7 @@
 
 DistanceSensorListener::DistanceSensorListener() :
 	_attitude_subscription(ORB_ID(vehicle_attitude), SUBSCRIB_INTERVAL, 0),
+	_local_pos_subscription(ORB_ID(vehicle_local_position), SUBSCRIB_INTERVAL, 0),
 	_subscriptions({
 		uORB::Subscription<distance_sensor_s>(ORB_ID(distance_sensor), SUBSCRIB_INTERVAL, 0),
 		uORB::Subscription<distance_sensor_s>(ORB_ID(distance_sensor), SUBSCRIB_INTERVAL, 1),
@@ -64,6 +65,8 @@ bool DistanceSensorListener::update()
 	bool isUpdated = false;
 
 	_attitude_subscription.update();
+	_local_pos_subscription.update();
+
 
 	// iterate over list of all uORB subscription and update each; check for newly connected sensors
 	for(uint8_t i = 0; i < N_SUBS; i++)
@@ -84,19 +87,34 @@ bool DistanceSensorListener::update()
 				if(sensor == NULL)
 				{
 					sensor = addSensor(msg.id, msg.orientation, msg.type);
-					std::cout << "ADDED NEW SENSOR; id = " << (int)msg.id << std::endl;
+					if(sensor != NULL)
+					{
+						std::cout << "ADDED NEW SENSOR from subs[" << (int)i << "]; id = " << (int)msg.id << std::endl;
+					}
 				}
 
 				if(sensor != NULL)
 				{
 					// set measurements
-					std::cout << "SUB " << (int)i << "  id " << (int)msg.id << "   : " << msg.current_distance << std::endl;
-
+					//std::cout << "SUB " << (int)i << "  id " << (int)msg.id << "   : " << msg.current_distance << std::endl;
+					// get current attitude as Direct Cosine Matrix (Dcm)
+					vehicle_attitude_s att_msg = _attitude_subscription.get();
+					matrix::Dcm<float> att(matrix::Quaternion<float>(att_msg.q));
+					// get current local position as Vector<float,3>
+					vehicle_local_position_s local_pos_msg = _local_pos_subscription.get();
+					matrix::Vector<float,3> local_pos;
+					local_pos(0) = local_pos_msg.x;
+					local_pos(1) = local_pos_msg.y;
+					local_pos(2) = local_pos_msg.z;
 					sensor->setMeasurement(msg.min_distance,
 											msg.max_distance,
 											msg.current_distance,
 											msg.covariance,
-											msg.timestamp);
+											msg.timestamp,
+											att,
+											local_pos);
+					Position obstacle_position_lf = sensor->getObstaclePositionLf();
+					std::cout << "Obstacle sensed (sensor " << (int)sensor->getId() << ") at " << obstacle_position_lf(0) << "," << obstacle_position_lf(1) << "," << obstacle_position_lf(2) << std::endl;
 				}
 				else
 				{
@@ -126,7 +144,6 @@ DistanceSensor* DistanceSensorListener::getSensor(uint8_t id)
 
 DistanceSensor* DistanceSensorListener::addSensor(uint8_t id, uint8_t orientation, uint8_t type)
 {
-	std::cout << "  sensorCoubt " << (int)_sensorCount << "   max " << (int)N_SENS_MAX << std::endl;
 	// check if there is space for an additional sensor
 	if(_sensorCount >= N_SENS_MAX)
 	{
