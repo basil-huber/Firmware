@@ -46,6 +46,7 @@
 #include <uORB/topics/vehicle_global_position.h>
 #include <uORB/topics/vehicle_status.h>
 #include <uORB/topics/battery_status.h>
+#include <uORB/topics/landing_target.h>
 #include <drivers/drv_accel.h>
 #include <drivers/drv_gyro.h>
 #include <drivers/drv_baro.h>
@@ -243,6 +244,7 @@ private:
 		_flow_pub(nullptr),
 		_dist_pub(nullptr),
 		_battery_pub(nullptr),
+		_landing_target_pub(nullptr),
 		_initialized(false),
 		_system_type(0)
 #ifndef __PX4_QURT
@@ -308,6 +310,7 @@ private:
 	orb_advert_t _flow_pub;
 	orb_advert_t _dist_pub;
 	orb_advert_t _battery_pub;
+	orb_advert_t _landing_target_pub;
 
 	bool _initialized;
 
@@ -321,6 +324,7 @@ private:
 	int publish_sensor_topics(mavlink_hil_sensor_t *imu);
 	int publish_flow_topic(mavlink_hil_optical_flow_t *flow);
 	int publish_distance_topic(mavlink_distance_sensor_t *dist);
+	int publish_landing_target(mavlink_landing_target_t *msg);
 
 #ifndef __PX4_QURT
 	// uORB publisher handlers

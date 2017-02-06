@@ -273,6 +273,7 @@ void Simulator::update_gps(mavlink_hil_gps_t *gps_sim)
 void Simulator::handle_message(mavlink_message_t *msg, bool publish)
 {
 	switch (msg->msgid) {
+
 	case MAVLINK_MSG_ID_HIL_SENSOR: {
 			mavlink_hil_sensor_t imu;
 			mavlink_msg_hil_sensor_decode(msg, &imu);
@@ -369,7 +370,7 @@ void Simulator::handle_message(mavlink_message_t *msg, bool publish)
 		break;
 
 	case MAVLINK_MSG_ID_HIL_STATE_QUATERNION:
-		mavlink_hil_state_quaternion_t hil_state;
+	{	mavlink_hil_state_quaternion_t hil_state;
 		mavlink_msg_hil_state_quaternion_decode(msg, &hil_state);
 
 		uint64_t timestamp = hrt_absolute_time();
@@ -460,10 +461,16 @@ void Simulator::handle_message(mavlink_message_t *msg, bool publish)
 			orb_publish_auto(ORB_ID(vehicle_local_position_groundtruth), &_lpos_pub, &hil_lpos, &hil_lpos_multi,
 					 ORB_PRIO_HIGH);
 		}
-
-
-
+		}
 		break;
+
+	case MAVLINK_MSG_ID_LANDING_TARGET:
+		mavlink_landing_target_t target_msg;
+		mavlink_msg_landing_target_decode(msg, &target_msg);
+		publish_landing_target(&target_msg);
+		break;
+
+
 	}
 
 }
@@ -923,6 +930,28 @@ int Simulator::publish_distance_topic(mavlink_distance_sensor_t *dist_mavlink)
 
 	int dist_multi;
 	orb_publish_auto(ORB_ID(distance_sensor), &_dist_pub, &dist, &dist_multi, ORB_PRIO_HIGH);
+
+	return OK;
+}
+
+int Simulator::publish_landing_target(mavlink_landing_target_t *msg)
+{
+	uint64_t timestamp = hrt_absolute_time();
+
+	struct landing_target_s target;
+	memset(&target, 0, sizeof(target));	// ???
+
+	target.time_usec  = timestamp;
+	target.angle_x    = msg->angle_x;
+	target.angle_y    = msg->angle_y;
+	target.distance   = msg->distance;
+	target.size_x     = msg->size_x;
+	target.size_y     = msg->size_y;
+	target.target_num = msg->target_num;
+	target.frame      = msg->frame;
+
+	int target_multi;
+	orb_publish_auto(ORB_ID(landing_target), &_landing_target_pub, &target, &target_multi, ORB_PRIO_HIGH);
 
 	return OK;
 }

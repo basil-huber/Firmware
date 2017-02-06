@@ -44,6 +44,7 @@
 
 #include "mavlink_main.h"
 #include "mavlink_messages.h"
+#include <v1.0/common/mavlink_msg_landing_target.h>
 
 #include <commander/px4_custom_mode.h>
 #include <drivers/drv_pwm_output.h>
@@ -91,6 +92,7 @@
 #include <uORB/topics/wind_estimate.h>
 #include <uORB/topics/mount_status.h>
 #include <uORB/topics/collision_report.h>
+#include <uORB/topics/landing_target.h>
 #include <uORB/uORB.h>
 
 
@@ -3592,6 +3594,71 @@ protected:
 	}
 };
 
+
+class MavlinkStreamLandingTarget : public MavlinkStream
+{
+public:
+    const char *get_name() const
+    {
+        return MavlinkStreamLandingTarget::get_name_static();
+    }
+    static const char *get_name_static()
+    {
+        return "LANDING_TARGET";
+    }
+    static uint16_t get_id_static()
+	{
+		return MAVLINK_MSG_ID_LANDING_TARGET;
+	}
+    uint16_t get_id()
+    {
+        return get_id_static();
+    }
+    static MavlinkStream *new_instance(Mavlink *mavlink)
+    {
+        return new MavlinkStreamLandingTarget(mavlink);
+    }
+    unsigned get_size()
+    {
+        return MAVLINK_MSG_ID_LANDING_TARGET_LEN + MAVLINK_NUM_NON_PAYLOAD_BYTES;
+    }
+
+private:
+    MavlinkOrbSubscription *_sub;
+    uint64_t _landing_target_time;
+
+
+    /* do not allow top copying this class */
+    MavlinkStreamLandingTarget(MavlinkStreamLandingTarget &);
+    MavlinkStreamLandingTarget& operator = (const MavlinkStreamLandingTarget &);
+
+protected:
+    explicit MavlinkStreamLandingTarget(Mavlink *mavlink) : MavlinkStream(mavlink),
+        _sub(_mavlink->add_orb_subscription(ORB_ID(landing_target))),  // make sure you enter the name of your uorb topic here
+        _landing_target_time(0)
+    {}
+
+    void send(const hrt_abstime t)
+    {
+        struct landing_target_s _landing_target;    //make sure ca_traj_struct_s is the definition of your uorb topic
+
+        if (_sub->update(&_landing_target_time, &_landing_target)) {
+            mavlink_landing_target_t mavlink_msg;  //make sure mavlink_ca_trajectory_t is the definition of your custom mavlink message
+
+            mavlink_msg.time_usec  = _landing_target.time_usec;
+            mavlink_msg.angle_x    = _landing_target.angle_x;
+            mavlink_msg.angle_y    = _landing_target.angle_y;
+            mavlink_msg.distance   = _landing_target.distance;
+            mavlink_msg.size_x 	   = _landing_target.size_x;
+            mavlink_msg.size_y 	   = _landing_target.size_y;
+            mavlink_msg.target_num = _landing_target.target_num;
+            mavlink_msg.frame      = _landing_target.frame;
+            mavlink_msg_landing_target_send_struct(_mavlink->get_channel(), &mavlink_msg);
+        }
+    }
+};
+
+
 const StreamListItem *streams_list[] = {
 	new StreamListItem(&MavlinkStreamHeartbeat::new_instance, &MavlinkStreamHeartbeat::get_name_static, &MavlinkStreamHeartbeat::get_id_static),
 	new StreamListItem(&MavlinkStreamStatustext::new_instance, &MavlinkStreamStatustext::get_name_static, &MavlinkStreamStatustext::get_id_static),
@@ -3638,5 +3705,6 @@ const StreamListItem *streams_list[] = {
 	new StreamListItem(&MavlinkStreamCollision::new_instance, &MavlinkStreamCollision::get_name_static, &MavlinkStreamCollision::get_id_static),
 	new StreamListItem(&MavlinkStreamWind::new_instance, &MavlinkStreamWind::get_name_static, &MavlinkStreamWind::get_id_static),
 	new StreamListItem(&MavlinkStreamMountStatus::new_instance, &MavlinkStreamMountStatus::get_name_static, &MavlinkStreamMountStatus::get_id_static),
+	new StreamListItem(&MavlinkStreamLandingTarget::new_instance, &MavlinkStreamLandingTarget::get_name_static, &MavlinkStreamLandingTarget::get_id_static),
 	nullptr
 };
