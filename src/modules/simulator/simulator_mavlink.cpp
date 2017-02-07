@@ -941,7 +941,8 @@ int Simulator::publish_landing_target(mavlink_landing_target_t *msg)
 	struct landing_target_s target;
 	memset(&target, 0, sizeof(target));	// ???
 
-	target.time_usec  = timestamp;
+	target.timestamp = timestamp;
+	target.time_usec  = msg->time_usec;
 	target.angle_x    = msg->angle_x;
 	target.angle_y    = msg->angle_y;
 	target.distance   = msg->distance;
