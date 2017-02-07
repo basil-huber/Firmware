@@ -46,9 +46,8 @@ param set LPE_GPS_ON 1
 param set MPC_ALT_MODE 1
 param set LPE_T_MAX_GRADE 0
 param set MPC_XY_VEL_MAX 2
-param set MPC_Z_VEL_MAX 2
+param set MPC_Z_VEL_MAX 5
 param set MPC_XY_P 0.5
-param set MIS_TAKEOFF_ALT 2
 
 replay tryapplyparams
 simulator start -s
@@ -87,6 +86,7 @@ sdlog2 start -r 100 -e -t -a
 mavlink boot_complete
 replay trystart
 
-sleep 2
+sleep 3
 commander arm
 commander mode auto:mission
+target_landing start
