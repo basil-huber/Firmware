@@ -90,7 +90,7 @@ public:
 
 
 
-	const matrix::Vector<float,M>& getStateEstimation() const {return _x;};
+	const matrix::Vector<float,M>& getStateEstimate() const {return _x;};
 	const matrix::SquareMatrix<float,M>& getStateCovarianceEstimation() const {return _p;};
 
 private:

@@ -44,7 +44,8 @@
 
 #include "mavlink_main.h"
 #include "mavlink_messages.h"
-#include <v1.0/common/mavlink_msg_landing_target.h>
+#include <v1.0/dronecourse/mavlink_msg_target_position_ned.h>
+#include <v1.0/dronecourse/mavlink_msg_target_position_ned_filtered.h>
 
 #include <commander/px4_custom_mode.h>
 #include <drivers/drv_pwm_output.h>
@@ -93,6 +94,7 @@
 #include <uORB/topics/mount_status.h>
 #include <uORB/topics/collision_report.h>
 #include <uORB/topics/landing_target.h>
+#include <uORB/topics/target_position_ned.h>
 #include <uORB/uORB.h>
 
 
@@ -3659,6 +3661,133 @@ protected:
 };
 
 
+class MavlinkStreamTargetPositionNED : public MavlinkStream
+{
+public:
+    const char *get_name() const
+    {
+        return MavlinkStreamTargetPositionNED::get_name_static();
+    }
+    static const char *get_name_static()
+    {
+        return "TARGET_POSITION_NED";
+    }
+    static uint16_t get_id_static()
+	{
+		return MAVLINK_MSG_ID_TARGET_POSITION_NED;
+	}
+    uint16_t get_id()
+    {
+        return get_id_static();
+    }
+    static MavlinkStream *new_instance(Mavlink *mavlink)
+    {
+        return new MavlinkStreamTargetPositionNED(mavlink);
+    }
+    unsigned get_size()
+    {
+        return MAVLINK_MSG_ID_TARGET_POSITION_NED_LEN + MAVLINK_NUM_NON_PAYLOAD_BYTES;
+    }
+
+private:
+    MavlinkOrbSubscription *_sub;
+    uint64_t _time;
+
+
+    /* do not allow top copying this class */
+    MavlinkStreamTargetPositionNED(MavlinkStreamTargetPositionNED &);
+    MavlinkStreamTargetPositionNED& operator = (const MavlinkStreamTargetPositionNED &);
+
+protected:
+    explicit MavlinkStreamTargetPositionNED(Mavlink *mavlink) : MavlinkStream(mavlink),
+        _sub(_mavlink->add_orb_subscription(ORB_ID(target_position_ned))),  // make sure you enter the name of your uorb topic here
+        _time(0)
+    {}
+
+    void send(const hrt_abstime t)
+    {
+        struct target_position_ned_s orb_msg;    //make sure ca_traj_struct_s is the definition of your uorb topic
+
+        if (_sub->update(&_time, &orb_msg)) {
+            mavlink_target_position_ned_t mavlink_msg;  //make sure mavlink_ca_trajectory_t is the definition of your custom mavlink message
+
+			// mavlink_msg.time_usec = orb_msg.timestamp;
+			mavlink_msg.x = orb_msg.x;
+			mavlink_msg.y = orb_msg.y;
+			mavlink_msg.z = orb_msg.z;
+			mavlink_msg.vx = orb_msg.vx;
+			mavlink_msg.vy = orb_msg.vy;
+			mavlink_msg.vz = orb_msg.vz;
+			mavlink_msg.target_num = orb_msg.target_num;
+            mavlink_msg_target_position_ned_send_struct(_mavlink->get_channel(), &mavlink_msg);
+        }
+    }
+};
+
+class MavlinkStreamTargetPositionNEDFiltered : public MavlinkStream
+{
+public:
+    const char *get_name() const
+    {
+        return MavlinkStreamTargetPositionNEDFiltered::get_name_static();
+    }
+    static const char *get_name_static()
+    {
+        return "TARGET_POSITION_NED_FILTERED";
+    }
+    static uint16_t get_id_static()
+	{
+		return MAVLINK_MSG_ID_TARGET_POSITION_NED_FILTERED;
+	}
+    uint16_t get_id()
+    {
+        return get_id_static();
+    }
+    static MavlinkStream *new_instance(Mavlink *mavlink)
+    {
+        return new MavlinkStreamTargetPositionNEDFiltered(mavlink);
+    }
+    unsigned get_size()
+    {
+        return MAVLINK_MSG_ID_TARGET_POSITION_NED_FILTERED_LEN + MAVLINK_NUM_NON_PAYLOAD_BYTES;
+    }
+
+private:
+    MavlinkOrbSubscription *_sub;
+    uint64_t _time;
+
+
+    /* do not allow top copying this class */
+    MavlinkStreamTargetPositionNEDFiltered(MavlinkStreamTargetPositionNEDFiltered &);
+    MavlinkStreamTargetPositionNEDFiltered& operator = (const MavlinkStreamTargetPositionNEDFiltered &);
+
+protected:
+    explicit MavlinkStreamTargetPositionNEDFiltered(Mavlink *mavlink) : MavlinkStream(mavlink),
+        _sub(_mavlink->add_orb_subscription(ORB_ID(target_position_ned_filtered))),  // make sure you enter the name of your uorb topic here
+        _time(0)
+    {}
+
+    void send(const hrt_abstime t)
+    {
+        struct target_position_ned_s orb_msg;    //make sure ca_traj_struct_s is the definition of your uorb topic
+
+        if (_sub->update(&_time, &orb_msg)) {
+            mavlink_target_position_ned_filtered_t mavlink_msg;  //make sure mavlink_ca_trajectory_t is the definition of your custom mavlink message
+
+			// mavlink_msg.time_usec = orb_msg.timestamp;
+			mavlink_msg.x = orb_msg.x;
+			mavlink_msg.y = orb_msg.y;
+			mavlink_msg.z = orb_msg.z;
+			mavlink_msg.vx = orb_msg.vx;
+			mavlink_msg.vy = orb_msg.vy;
+			mavlink_msg.vz = orb_msg.vz;
+			mavlink_msg.target_num = orb_msg.target_num;
+            mavlink_msg_target_position_ned_filtered_send_struct(_mavlink->get_channel(), &mavlink_msg);
+        }
+    }
+};
+
+
 const StreamListItem *streams_list[] = {
 	new StreamListItem(&MavlinkStreamHeartbeat::new_instance, &MavlinkStreamHeartbeat::get_name_static, &MavlinkStreamHeartbeat::get_id_static),
 	new StreamListItem(&MavlinkStreamStatustext::new_instance, &MavlinkStreamStatustext::get_name_static, &MavlinkStreamStatustext::get_id_static),
@@ -3706,5 +3835,7 @@ const StreamListItem *streams_list[] = {
 	new StreamListItem(&MavlinkStreamWind::new_instance, &MavlinkStreamWind::get_name_static, &MavlinkStreamWind::get_id_static),
 	new StreamListItem(&MavlinkStreamMountStatus::new_instance, &MavlinkStreamMountStatus::get_name_static, &MavlinkStreamMountStatus::get_id_static),
 	new StreamListItem(&MavlinkStreamLandingTarget::new_instance, &MavlinkStreamLandingTarget::get_name_static, &MavlinkStreamLandingTarget::get_id_static),
+	new StreamListItem(&MavlinkStreamTargetPositionNED::new_instance, &MavlinkStreamTargetPositionNED::get_name_static, &MavlinkStreamTargetPositionNED::get_id_static),
+	new StreamListItem(&MavlinkStreamTargetPositionNEDFiltered::new_instance, &MavlinkStreamTargetPositionNEDFiltered::get_name_static, &MavlinkStreamTargetPositionNEDFiltered::get_id_static),
 	nullptr
 };

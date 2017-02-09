@@ -8,6 +8,7 @@
 
 #include "TargetTracker.hpp"
 #include <matrix/math.hpp>
+#include <uORB/topics/target_position_ned.h>
 
 
 
@@ -16,8 +17,10 @@
 TargetTracker::TargetTracker() :
     _attitude_sub(ORB_ID(vehicle_attitude), 10, 0),
     _position_sub(ORB_ID(vehicle_local_position), 10, 0),
-    _focal_length(IMAGE_WIDTH2 / tan(HFOV_DEFAULT_/2.0f))
-
+    _target_position_pub(nullptr),
+    _target_position_filtered_pub(nullptr),
+    _focal_length(IMAGE_WIDTH2 / tan(HFOV_DEFAULT_/2.0f)),
+    _target_num(0)
 {
 	// subscribe to landing target messages
 	_polls[0].fd = orb_subscribe(ORB_ID(landing_target));
@@ -49,6 +52,12 @@ void TargetTracker::update()
 {
   _kf.predict();
 
+  matrix::Vector<float,6> x_est = _kf.getStateEstimate();
+  struct target_position_ned_s pos_msg;
+  pack_target_position(pos_msg, x_est(0), x_est(1), x_est(2), x_est(3), x_est(4), x_est(5));
+  int instance;
+  orb_publish_auto(ORB_ID(target_position_ned_filtered), &_target_position_filtered_pub, &pos_msg, &instance, ORB_PRIO_HIGH);
+
   bool new_measure;
   orb_check(_polls[0].fd, &new_measure);
   if(new_measure)
@@ -73,6 +82,10 @@ void TargetTracker::update()
         matrix::Vector3f pos_vehicle(_position_sub.get().x, _position_sub.get().y, _position_sub.get().z);
         matrix::Vector3f target_pos_lf = att_vehicle.conjugate_inversed(target_pos_bf);
         target_pos_lf += pos_vehicle;
+
+        pack_target_position(pos_msg, target_pos_lf(0), target_pos_lf(1), target_pos_lf(2), 0,0,0);
+        orb_publish_auto(ORB_ID(target_position_ned), &_target_position_pub, &pos_msg, &instance, ORB_PRIO_HIGH);
+
 
         _kf.correct(target_pos_lf);
   }
@@ -112,4 +125,16 @@ void TargetTracker::update()
  //                     (double)target_pos_lf(0),
  //                     (double)-target_pos_lf(2));
  //  	}
+}
+
+
+void TargetTracker::pack_target_position(struct target_position_ned_s& pos_msg, float x, float y, float z, float vx, float vy, float vz)
+{
+  pos_msg.x = x;
+  pos_msg.y = y;
+  pos_msg.z = z;
+  pos_msg.vx = vx;
+  pos_msg.vy = vy;
+  pos_msg.vz = vz;
+  pos_msg.target_num = _target_num;
 }

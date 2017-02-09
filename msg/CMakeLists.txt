@@ -125,6 +125,7 @@ set(msg_file_names
 	mount_status.msg
 	collision_report.msg
 	landing_target.msg
+	target_position_ned.msg
 	)
 
 # Get absolute paths
