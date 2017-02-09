@@ -14,6 +14,9 @@
 #include <uORB/topics/vehicle_attitude.h>
 #include <uORB/Subscription.hpp>
 
+# include "Kalman.hpp"
+
+
 //#include <uORB/uORB.h>
 
 const static float HFOV_DEFAULT_ = 1.0f;       // horizontal field of view [rad]
@@ -39,6 +42,9 @@ private:
     const static uint16_t IMAGE_WIDTH2 = 640/2;	// half image width
     const static uint16_t IMAGE_HEIGHT2 = 480/2;	// half image height
     const float _focal_length;
+
+    // kalman filter
+    KalmanFilter<6,3> _kf;
 };
 
 

@@ -158,6 +158,7 @@ int target_landing_thread_main(int argc, char *argv[])
 
 	while (!thread_should_exit) {
 		tracker.update();
+		usleep(50000);
 	}
 
 	PX4_DEBUG("exiting.");
