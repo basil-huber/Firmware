@@ -79,7 +79,6 @@ set(config_module_list
 	examples/attitude_estimator_ekf
 	examples/fixedwing_control
 
-	dronecourse/obstacle_mapper
 	dronecourse/target_landing
 
 	#
