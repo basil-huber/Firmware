@@ -76,7 +76,7 @@ public:
 	void correct(matrix::Vector<float,N> z)
 	{
 		// calc kalman gain k (weight/trust of measurement)
-		matrix::SquareMatrix<float,N> a = _h * _p * _h_t;
+		matrix::SquareMatrix<float,N> a = (_h * _p * _h_t) + _r;
 		matrix::Matrix<float,M,N> k = _p * _h_t * matrix::inv(a);
 		
 		// update state estimation
