@@ -31,12 +31,14 @@
 #
 ############################################################################
 px4_add_module(
-	MODULE dronecourse__target_landing
-	MAIN target_landing
+	MODULE dronecourse__dronecourse
+	MAIN dronecourse
 	STACK_MAIN 2000
 	SRCS
-		target_landing_main.cpp
-		TargetTracker.cpp
+		dronecourse_main.cpp
+		PositionCtrl.cpp
+		TargetFollower.cpp
+		DronecourseHandler.cpp
 	DEPENDS
 		platforms__common
 	)

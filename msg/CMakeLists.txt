@@ -128,6 +128,7 @@ set(msg_file_names
 	wind_estimate.msg
 	landing_target.msg
 	target_position_ned.msg
+	velocity_setpoint.msg
 	)
 
 # Get absolute paths

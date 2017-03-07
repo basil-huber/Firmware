@@ -49,6 +49,13 @@ param set MPC_XY_VEL_MAX 2
 param set MPC_Z_VEL_MAX 5
 param set MPC_XY_P 0.5
 
+# origin for drone course (Lausanne EPFL Esplanade)
+param set LPE_LAT 46.51852236174565
+param set LPE_LON 6.566044801857777
+
+param set FAKE_ORIGIN 1
+
+
 replay tryapplyparams
 simulator start -s
 rgbledsim start
@@ -89,6 +96,5 @@ mavlink boot_complete
 replay trystart
 
 sleep 3
-commander arm
-commander mode auto:mission
-target_landing start
+target_tracking start
+dronecourse start

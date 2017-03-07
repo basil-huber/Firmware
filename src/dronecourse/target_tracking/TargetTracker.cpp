@@ -54,9 +54,7 @@ void TargetTracker::update()
 
   matrix::Vector<float,6> x_est = _kf.getStateEstimate();
   struct target_position_ned_s pos_msg;
-  pack_target_position(pos_msg, x_est(0), x_est(1), x_est(2), x_est(3), x_est(4), x_est(5));
   int instance;
-  orb_publish_auto(ORB_ID(target_position_ned_filtered), &_target_position_filtered_pub, &pos_msg, &instance, ORB_PRIO_HIGH);
 
   bool new_measure;
   orb_check(_polls[0].fd, &new_measure);
@@ -83,48 +81,15 @@ void TargetTracker::update()
         matrix::Vector3f target_pos_lf = att_vehicle.conjugate_inversed(target_pos_bf);
         target_pos_lf += pos_vehicle;
 
+
         pack_target_position(pos_msg, target_pos_lf(0), target_pos_lf(1), target_pos_lf(2), 0,0,0);
         orb_publish_auto(ORB_ID(target_position_ned), &_target_position_pub, &pos_msg, &instance, ORB_PRIO_HIGH);
 
 
         _kf.correct(target_pos_lf);
   }
-
-	/* wait for sensor update of 1 file descriptor for 1000 ms (1 second) */    
- //    px4_poll(_polls, 1, 1000);
-	// if (_polls[0].revents & POLLIN) {
-        
- //        // update vehicle attitude and position
- //        _attitude_sub.update();
- //        _position_sub.update();
-
- //        /* copy data to local buffers */
- //        struct landing_target_s landing_target;
- //        orb_copy(ORB_ID(landing_target), _polls[0].fd, &landing_target);
-
- //        // compute target position in body frame
- //        float x = -(landing_target.angle_y - IMAGE_HEIGHT2);
- //        float y = landing_target.angle_x - IMAGE_WIDTH2;
- //        float dist = landing_target.distance;
- //        float scale = dist / sqrtf(x*x + y*y + _focal_length*_focal_length);
- //        matrix::Vector3f target_pos_bf(x*scale, y*scale, _focal_length*scale);  // target position in bf
-
- //        // convert to local frame (NED)
- //        matrix::Quaternion<float> att_vehicle(_attitude_sub.get().q);
- //        matrix::Vector3f pos_vehicle(_position_sub.get().x, _position_sub.get().y, _position_sub.get().z);
- //        matrix::Vector3f target_pos_lf = att_vehicle.conjugate_inversed(target_pos_bf);
- //        target_pos_lf += pos_vehicle;
-
- //        PX4_INFO("---------------------------------------");
- //        PX4_INFO("%f\t%f\t%f",
- //                     (double)pos_vehicle(1),
- //                     (double)pos_vehicle(0),
- //                     (double)pos_vehicle(2));
- //        PX4_INFO("%f\t%f\t%f",
- //                     (double)target_pos_lf(1),
- //                     (double)target_pos_lf(0),
- //                     (double)-target_pos_lf(2));
- //  	}
+  pack_target_position(pos_msg, x_est(0), x_est(1), x_est(2), x_est(3), x_est(4), x_est(5));
+  orb_publish_auto(ORB_ID(target_position_ned_filtered), &_target_position_filtered_pub, &pos_msg, &instance, ORB_PRIO_HIGH);
 }
 
 

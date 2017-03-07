@@ -32,8 +32,8 @@
  ****************************************************************************/
 
 /**
- * @file target_landing_main.cpp
- * Class to track a moving platform
+ * @file target_tracking_main.cpp
+ * Helper class to start target tracking
  * Designed for the LIS-EPFL DroneCourse
  *
  * @author Basil Huber LIS <basil.huber@gmail.com>
@@ -51,7 +51,7 @@
 #include <fcntl.h>
 #include <px4_posix.h>
 
-#include <iostream>
+
 #include "TargetTracker.hpp"
 
 
@@ -62,12 +62,12 @@ static int deamon_task;             /**< Handle of deamon task / thread */
 /**
  * Deamon management function.
  */
-extern "C" __EXPORT int target_landing_main(int argc, char *argv[]);
+extern "C" __EXPORT int target_tracking_main(int argc, char *argv[]);
 
 /**
  * Mainloop of deamon.
  */
-int target_landing_thread_main(int argc, char *argv[]);
+int target_tracking_thread_main(int argc, char *argv[]);
 
 /**
  * Print the correct usage.
@@ -80,7 +80,7 @@ usage(const char *reason)
 	if (reason) {
 		fprintf(stderr, "%s\n", reason);
 	}
-	fprintf(stderr, "usage: target_landing {start|stop|status} [-p <additional params>]\n\n");
+	fprintf(stderr, "usage: target_tracking {start|stop|status} [-p <additional params>]\n\n");
 	return 1;
 }
 
@@ -92,7 +92,7 @@ usage(const char *reason)
  * The actual stack size should be set in the call
  * to task_create().
  */
-int target_landing_main(int argc, char *argv[])
+int target_tracking_main(int argc, char *argv[])
 {
 
 	if (argc < 2) {
@@ -110,12 +110,12 @@ int target_landing_main(int argc, char *argv[])
 
 		thread_should_exit = false;
 
-		deamon_task = px4_task_spawn_cmd("target_landing",
+		deamon_task = px4_task_spawn_cmd("target_tracking",
 						 SCHED_DEFAULT,
 						 SCHED_PRIORITY_MAX - 1,
 						 13000,
-						 target_landing_thread_main,
-						 (argv && argc > 2) ? (char *const *) &argv[2] : (char *const *) NULL);
+						 target_tracking_thread_main,
+						 NULL);
 		return 0;
 	}
 
@@ -141,22 +141,23 @@ int target_landing_main(int argc, char *argv[])
 
 		return 0;
 	}
+
 	usage("unrecognized command");
 	return 1;
 }
 
 
-int target_landing_thread_main(int argc, char *argv[])
+int target_tracking_thread_main(int argc, char *argv[])
 {
 
 	PX4_DEBUG("starting");
 
+	thread_running = true;
 
 	TargetTracker tracker;
 
-	thread_running = true;
-
-	while (!thread_should_exit) {
+	while (!thread_should_exit)
+	{
 		tracker.update();
 		usleep(50000);
 	}

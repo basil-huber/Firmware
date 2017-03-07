@@ -82,7 +82,8 @@ set(config_module_list
 	examples/attitude_estimator_ekf
 	examples/fixedwing_control
 
-	dronecourse/target_landing
+	dronecourse/dronecourse
+	dronecourse/target_tracking
 
 	#
 	# Testing
