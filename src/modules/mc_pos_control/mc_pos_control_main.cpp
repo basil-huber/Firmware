@@ -1117,7 +1117,6 @@ MulticopterPositionControl::control_non_manual(float dt)
 			      _pos_sp_triplet.current.velocity_valid;
 
 	// do not go slower than the follow target velocity when position tracking is active (set to valid)
-
 	if (_pos_sp_triplet.current.type == position_setpoint_s::SETPOINT_TYPE_FOLLOW_TARGET &&
 	    velocity_valid &&
 	    _pos_sp_triplet.current.position_valid) {
@@ -1148,6 +1147,12 @@ MulticopterPositionControl::control_non_manual(float dt)
 
 		_vel_sp(0) = _pos_sp_triplet.current.vx;
 		_vel_sp(1) = _pos_sp_triplet.current.vy;
+		_run_pos_control = false;
+		if(!_pos_sp_triplet.current.alt_valid)
+		{
+			_vel_sp(2) = _pos_sp_triplet.current.vz;
+			_run_alt_control = false;
+		}
 	}
 
 	/* use constant descend rate when landing, ignore altitude setpoint */
