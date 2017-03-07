@@ -68,7 +68,7 @@
 #include "rtl.h"
 #include "datalinkloss.h"
 #include "enginefailure.h"
-#include "follow_target.h"
+#include "velocity_mode.h"
 #include "gpsfailure.h"
 #include "rcloss.h"
 #include "geofence.h"
@@ -306,7 +306,7 @@ private:
 							  (FW only!) */
 	GpsFailure	_gpsFailure;			/**< class that handles the OBC gpsfailure loss mode */
 
-	FollowTarget _follow_target;
+	VelocityMode _velocity_mode;
 
 	NavigatorMode *_navigation_mode_array[NAVIGATOR_MODE_ARRAY_SIZE];	/**< array of navigation modes */
 
