@@ -24,9 +24,13 @@ public:
 
 	void update();
 
+    void set_yaw_command(float yaw) {_yaw_command = yaw;};
+
     void set_position_command(matrix::Vector3f pos){_goal_pos = pos;};
 
     const matrix::Vector3f& get_velocity_command() const {return _vel_command;};
+
+    float get_yaw_command() const {return _yaw_command;};
 
     const matrix::Vector3f& get_current_position() const {return _current_pos;};
 
@@ -37,6 +41,7 @@ private:
 
     matrix::Vector3f _goal_pos;
     matrix::Vector3f _vel_command;
+    float            _yaw_command;
     matrix::Vector3f _current_pos;
 
     // subscriptions

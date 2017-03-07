@@ -31,9 +31,11 @@ public:
 
     void set_position_command(float x, float y, float z);
 
+    void set_yaw_command(float yaw);
+
 private:
 
-	void send_velocity_command(const matrix::Vector3f& vel_command);
+	void send_velocity_command(const matrix::Vector3f& vel_command, float yaw_command);
 
     orb_advert_t _velocity_sp_pub;
 

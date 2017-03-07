@@ -28,12 +28,12 @@ void DronecourseHandler::update(DcMode mode)
   {
     case DcMode::POS_CTRL:
       _pos_ctrl.update();
-      send_velocity_command(_pos_ctrl.get_velocity_command());
+      send_velocity_command(_pos_ctrl.get_velocity_command(), _pos_ctrl.get_yaw_command());
       break;
 
     case DcMode::FOLLOW:
       _follower.update();
-      send_velocity_command(_follower.get_velocity_command());
+      send_velocity_command(_follower.get_velocity_command(), _follower.get_yaw_command());
       break;
 
     case DcMode::MISSION:
@@ -49,12 +49,19 @@ void DronecourseHandler::set_position_command(float x, float y, float z)
 }
 
 
-void DronecourseHandler::send_velocity_command(const matrix::Vector3f& vel_command)
+void DronecourseHandler::set_yaw_command(float yaw)
+{
+  _pos_ctrl.set_yaw_command(yaw);
+}
+
+
+void DronecourseHandler::send_velocity_command(const matrix::Vector3f& vel_command, float yaw_command)
 {
   velocity_setpoint_s vel_msg;
   vel_msg.vx = vel_command(0);
   vel_msg.vy = vel_command(1);
   vel_msg.vz = vel_command(2);
+  vel_msg.yaw = yaw_command;
   vel_msg.timestamp = hrt_absolute_time();
 
   int instance;

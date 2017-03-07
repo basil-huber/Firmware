@@ -14,7 +14,9 @@
 #include <iostream>
 
 PositionCtrl::PositionCtrl() :
+  _goal_pos(0.0f,0.0f,0.0f),
   _vel_command(0.0f,0.0f,0.0f),
+  _yaw_command(0.0f),
   _current_pos(0.0f,0.0f,0.0f),
   _local_pos_sub(orb_subscribe(ORB_ID(vehicle_local_position)))
 {

@@ -25,7 +25,7 @@ public:
 
 private:
 
-    void set_velocity_command(float vx, float vy, float z);
+    void set_velocity_command(float vx, float vy, float z, float yaw);
 
     // uORB subscriptions
     int _velocity_sp_subs[ORB_MULTI_MAX_INSTANCES];

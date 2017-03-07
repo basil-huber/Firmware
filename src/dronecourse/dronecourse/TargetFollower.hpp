@@ -30,17 +30,28 @@ public:
 
     const matrix::Vector3f& get_velocity_command() const {return _vel_command;};
 
+    float get_yaw_command() const {return _yaw_command;};
+
 private:
+    void update_subscriptions();
+
     PositionCtrl _pos_ctrl;
 
     // uORB subscriptions
     int _target_pos_sub;
+    int _local_pos_sub;
+
 
     // navigation variables
     bool _has_target_pos_lock;
     bool _has_target_vel_lock;
 
+    matrix::Vector3f _current_pos;
+    matrix::Vector3f _current_vel;
+    matrix::Vector3f _target_pos;
+    matrix::Vector3f _target_vel;
     matrix::Vector3f _vel_command;
+    float            _yaw_command;
 };
 
 

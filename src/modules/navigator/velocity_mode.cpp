@@ -36,12 +36,12 @@ void VelocityMode::on_active()
 
   if(updated)
   {
-    set_velocity_command(velocity_setpoint.vx, velocity_setpoint.vy, velocity_setpoint.vz);
+    set_velocity_command(velocity_setpoint.vx, velocity_setpoint.vy, velocity_setpoint.vz, velocity_setpoint.yaw);
   }
 }
 
 
-void VelocityMode::set_velocity_command(float vx, float vy, float vz)
+void VelocityMode::set_velocity_command(float vx, float vy, float vz, float yaw)
 {
   // set position_setpoint to target position
     struct position_setpoint_triplet_s* setpoint_triplet = _navigator->get_position_setpoint_triplet();
@@ -53,21 +53,20 @@ void VelocityMode::set_velocity_command(float vx, float vy, float vz)
     setpoint_triplet->current.valid = true;    
     setpoint_triplet->current.type = position_setpoint_s::SETPOINT_TYPE_FOLLOW_TARGET;
     
-    // set velocity
+    // set velocity and yaw
     setpoint_triplet->current.velocity_valid = true;
     setpoint_triplet->current.velocity_frame = position_setpoint_s::VELOCITY_FRAME_LOCAL_NED;
     setpoint_triplet->current.vx = vx;
     setpoint_triplet->current.vy = vy;
     setpoint_triplet->current.vz = vz;
-
-    // set altitiude
-    setpoint_triplet->current.alt_valid = false;
+    setpoint_triplet->current.yaw_valid = true;
+    setpoint_triplet->current.yaw = yaw;
 
     // deactivate all other controls
     setpoint_triplet->current.position_valid = false;
     setpoint_triplet->current.acceleration_valid = false;
-    setpoint_triplet->current.yaw_valid = false;
     setpoint_triplet->current.yawspeed_valid = false;
+    setpoint_triplet->current.alt_valid = false;
 
     // tell the navigator that we've updated the position_setpoint
     _navigator->set_position_setpoint_triplet_updated();

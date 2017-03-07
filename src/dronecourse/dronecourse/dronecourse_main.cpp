@@ -65,6 +65,7 @@ static bool new_pos = false;
 static float pos_x = 0;
 static float pos_y = 0;
 static float pos_z = 5;
+static float yaw = 0;
 
 /**
  * Deamon management function.
@@ -160,6 +161,7 @@ int dronecourse_main(int argc, char *argv[])
 		pos_x = strtod(argv[2], &end);
 		pos_y = strtod(argv[3], &end);
 		pos_z = strtod(argv[4], &end);
+		yaw = strtod(argv[4], &end);
 		new_pos = true;
 		dc_mode = DronecourseHandler::DcMode::POS_CTRL;
 		PX4_INFO("Setting position command to ( %f | %f | %f )", (double)pos_x, (double)pos_y, (double)pos_z);
@@ -192,6 +194,7 @@ int dronecourse_thread_main(int argc, char *argv[])
 		if (dc_mode == DronecourseHandler::DcMode::POS_CTRL && new_pos)
 		{
 			handler.set_position_command(pos_x, pos_y, pos_z);
+			handler.set_yaw_command(yaw);
 		}
 		handler.update(dc_mode);
 		usleep(50000);
