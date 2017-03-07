@@ -20,7 +20,7 @@ TargetTracker::TargetTracker() :
     _target_position_pub(nullptr),
     _target_position_filtered_pub(nullptr),
     _focal_length(IMAGE_WIDTH2 / tan(HFOV_DEFAULT_/2.0f)),
-    _target_num(0)
+    _target_id(0)
 {
 	// subscribe to landing target messages
 	_polls[0].fd = orb_subscribe(ORB_ID(landing_target));
@@ -52,7 +52,6 @@ void TargetTracker::update()
 {
   _kf.predict();
 
-  matrix::Vector<float,6> x_est = _kf.getStateEstimate();
   struct target_position_ned_s pos_msg;
   int instance;
 
@@ -60,7 +59,7 @@ void TargetTracker::update()
   orb_check(_polls[0].fd, &new_measure);
   if(new_measure)
   {
-            // update vehicle attitude and position
+        // update vehicle attitude and position
         _attitude_sub.update();
         _position_sub.update();
 
@@ -82,24 +81,51 @@ void TargetTracker::update()
         target_pos_lf += pos_vehicle;
 
 
-        pack_target_position(pos_msg, target_pos_lf(0), target_pos_lf(1), target_pos_lf(2), 0,0,0);
+        pack_target_position(pos_msg, target_pos_lf);
         orb_publish_auto(ORB_ID(target_position_ned), &_target_position_pub, &pos_msg, &instance, ORB_PRIO_HIGH);
 
 
         _kf.correct(target_pos_lf);
   }
-  pack_target_position(pos_msg, x_est(0), x_est(1), x_est(2), x_est(3), x_est(4), x_est(5));
+
+  matrix::Vector<float,6> x_est = _kf.getStateEstimate();
+  matrix::Vector<float,6> x_var = _kf.getStateVariances();
+  pack_target_position(pos_msg, x_est, x_var);
   orb_publish_auto(ORB_ID(target_position_ned_filtered), &_target_position_filtered_pub, &pos_msg, &instance, ORB_PRIO_HIGH);
 }
 
 
-void TargetTracker::pack_target_position(struct target_position_ned_s& pos_msg, float x, float y, float z, float vx, float vy, float vz)
+void TargetTracker::pack_target_position(struct target_position_ned_s& pos_msg, const matrix::Vector3f& pos)
 {
-  pos_msg.x = x;
-  pos_msg.y = y;
-  pos_msg.z = z;
-  pos_msg.vx = vx;
-  pos_msg.vy = vy;
-  pos_msg.vz = vz;
-  pos_msg.target_num = _target_num;
+  pos_msg.x       = pos(0);
+  pos_msg.y       = pos(1);
+  pos_msg.z       = pos(2);
+  pos_msg.vx      = 0;
+  pos_msg.vy      = 0;
+  pos_msg.vz      = 0;
+  pos_msg.var_x   = 0;
+  pos_msg.var_x   = 0;
+  pos_msg.var_x   = 0;
+  pos_msg.var_vx  = 0;
+  pos_msg.var_vy  = 0;
+  pos_msg.var_vz  = 0;
+  pos_msg.target_id = _target_id;
+}
+
+void TargetTracker::pack_target_position(struct target_position_ned_s& pos_msg, const matrix::Vector<float,6>& pos_vel, const matrix::Vector<float,6>& variance)
+{
+  pos_msg.x       = pos_vel(0);
+  pos_msg.y       = pos_vel(1);
+  pos_msg.z       = pos_vel(2);
+  pos_msg.vx      = pos_vel(3);
+  pos_msg.vy      = pos_vel(4);
+  pos_msg.vz      = pos_vel(5);
+  pos_msg.var_x   = variance(0);
+  pos_msg.var_y   = variance(1);
+  pos_msg.var_z   = variance(2);
+  pos_msg.var_vx  = variance(3);
+  pos_msg.var_vy  = variance(4);
+  pos_msg.var_vz  = variance(5);
+
+  pos_msg.target_id = _target_id;
 }

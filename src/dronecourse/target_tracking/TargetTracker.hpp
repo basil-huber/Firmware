@@ -33,7 +33,8 @@ public:
 
 private:
 
-	void pack_target_position(struct target_position_ned_s& pos_msg, float x, float y, float z, float vx, float vy, float vz);
+	void pack_target_position(struct target_position_ned_s& pos_msg, const matrix::Vector3f& pos);
+    void pack_target_position(struct target_position_ned_s& pos_msg, const matrix::Vector<float,6>& pos_vel, const matrix::Vector<float,6>& variance);
 
     px4_pollfd_struct_t _polls[1];      // polling handle to wait for sensor reading
     
@@ -49,7 +50,7 @@ private:
     // kalman filter
     KalmanFilter<6,3> _kf;
 
-    int _target_num;
+    int _target_id;
 };
 
 

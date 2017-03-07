@@ -93,7 +93,17 @@ public:
 
 
 	const matrix::Vector<float,M>& getStateEstimate() const {return _x;};
-	const matrix::SquareMatrix<float,M>& getStateCovarianceEstimation() const {return _p;};
+
+	matrix::Vector<float,M> getStateVariances() const
+	{
+		matrix::Vector<float,M> variances;
+
+		for(int i= 0; i < M; i++)
+		{
+			variances(i) = _p(i,i);
+		}
+		return variances;
+	}
 
 private:
 	matrix::SquareMatrix<float,M>   _q;			//< Covariance of system (model) noise [constant]

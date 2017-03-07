@@ -4050,10 +4050,7 @@ protected:
 			mavlink_msg.x = orb_msg.x;
 			mavlink_msg.y = orb_msg.y;
 			mavlink_msg.z = orb_msg.z;
-			mavlink_msg.vx = orb_msg.vx;
-			mavlink_msg.vy = orb_msg.vy;
-			mavlink_msg.vz = orb_msg.vz;
-			mavlink_msg.target_num = orb_msg.target_num;
+			mavlink_msg.target_num = orb_msg.target_id;
             mavlink_msg_target_position_ned_send_struct(_mavlink->get_channel(), &mavlink_msg);
         }
     }
@@ -4116,7 +4113,13 @@ protected:
 			mavlink_msg.vx = orb_msg.vx;
 			mavlink_msg.vy = orb_msg.vy;
 			mavlink_msg.vz = orb_msg.vz;
-			mavlink_msg.target_num = orb_msg.target_num;
+			mavlink_msg.var_x = orb_msg.var_x;
+			mavlink_msg.var_y = orb_msg.var_y;
+			mavlink_msg.var_z = orb_msg.var_z;
+			mavlink_msg.var_vx = orb_msg.var_vx;
+			mavlink_msg.var_vy = orb_msg.var_vy;
+			mavlink_msg.var_vz = orb_msg.var_vz;
+			mavlink_msg.target_num = orb_msg.target_id;
             mavlink_msg_target_position_ned_filtered_send_struct(_mavlink->get_channel(), &mavlink_msg);
         }
     }
