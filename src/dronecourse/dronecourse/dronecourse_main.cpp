@@ -152,7 +152,7 @@ int dronecourse_main(int argc, char *argv[])
 
 	if (!strcmp(argv[1], "pos"))
 	{
-		if(argc < 5){
+		if(argc < 6){
 			usage("coordinates missing");
 			return 1;
 		}
@@ -161,7 +161,11 @@ int dronecourse_main(int argc, char *argv[])
 		pos_x = strtod(argv[2], &end);
 		pos_y = strtod(argv[3], &end);
 		pos_z = strtod(argv[4], &end);
-		yaw = strtod(argv[4], &end);
+
+		// if provided, set new yaw setpoint
+		if(argc >= 6){
+			yaw = strtod(argv[5], &end);
+		}
 		new_pos = true;
 		dc_mode = DronecourseHandler::DcMode::POS_CTRL;
 		PX4_INFO("Setting position command to ( %f | %f | %f )", (double)pos_x, (double)pos_y, (double)pos_z);
