@@ -55,6 +55,8 @@ private:
     // navigation variables
     bool _has_target_pos_lock;
     bool _has_target_vel_lock;
+    bool _has_target_pos_lock_old;
+    bool _has_target_vel_lock_old;
 
     matrix::Vector3f _current_pos;
     matrix::Vector3f _current_vel;

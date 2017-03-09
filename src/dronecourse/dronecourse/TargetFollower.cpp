@@ -25,6 +25,8 @@ TargetFollower::TargetFollower() :
   _vel_gain(0.0f),
   _has_target_pos_lock(false),
   _has_target_vel_lock(false),
+  _has_target_pos_lock_old(false),
+  _has_target_vel_lock_old(false),
   _vel_command(0.0f, 0.0f, 0.0f),
   _yaw_command(0.0f)
 {
@@ -35,8 +37,8 @@ void TargetFollower::update()
 {
 
   update_parameters();
-  _has_target_pos_lock = false;
-  _has_target_vel_lock = false;
+  // _has_target_pos_lock = false;
+  // _has_target_vel_lock = false;
   update_subscriptions();
 
   if(_has_target_pos_lock)
@@ -50,7 +52,7 @@ void TargetFollower::update()
 
 
   } else {
-    matrix::Vector3f goal_pos(20, 70, -70);
+    matrix::Vector3f goal_pos(0, 70, -70);
     _pos_ctrl.set_position_command(goal_pos);
     _pos_ctrl.set_yaw_command(0);
     _pos_ctrl.update();
@@ -65,6 +67,9 @@ void TargetFollower::update_subscriptions()
   bool updated;
   orb_check(_target_pos_sub, &updated);
 
+  _has_target_pos_lock_old = _has_target_pos_lock;
+  _has_target_vel_lock_old = _has_target_vel_lock;
+
   if(updated)
   {
     target_position_ned_s target_msg;
@@ -78,6 +83,7 @@ void TargetFollower::update_subscriptions()
 
     _has_target_pos_lock = target_msg.var_x < 70 && target_msg.var_y < 70 && target_msg.var_z < 50;
     _has_target_vel_lock = target_msg.var_vx < 10 && target_msg.var_vy < 10 && target_msg.var_vz < 10;
+
   }
 
     orb_check(_local_pos_sub, &updated);
@@ -91,6 +97,14 @@ void TargetFollower::update_subscriptions()
     _current_vel(0) = local_pos_msg.vx;
     _current_vel(1) = local_pos_msg.vy;
     _current_vel(2) = local_pos_msg.vz;
+  }
+
+  if(_has_target_pos_lock && !_has_target_pos_lock_old)
+  {
+    PX4_WARN("POS_TARGET_LOCK GAINED");
+  } else if (!_has_target_pos_lock && _has_target_pos_lock_old)
+  {
+    PX4_WARN("POS_TARGET_LOCK LOST");
   }
 }
 

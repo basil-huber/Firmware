@@ -30,4 +30,4 @@ PARAM_DEFINE_FLOAT(FOL_VEL, 1.0f);
 * @decimal 2
 * @group Dronecourse
 */
-PARAM_DEFINE_FLOAT(FOL_POS, 0.3f);
+PARAM_DEFINE_FLOAT(FOL_POS, 0.1f);
