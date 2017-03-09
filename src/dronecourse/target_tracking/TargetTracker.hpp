@@ -27,7 +27,7 @@ class TargetTracker
 
 
 public:
-	TargetTracker();
+	TargetTracker(float dt);
 
 	void update();
 

@@ -59,6 +59,8 @@ static volatile bool thread_should_exit = false;     /**< Deamon exit flag */
 static volatile bool thread_running = false;     /**< Deamon status flag */
 static int deamon_task;             /**< Handle of deamon task / thread */
 
+#define DT_US 50000
+
 /**
  * Deamon management function.
  */
@@ -154,12 +156,12 @@ int target_tracking_thread_main(int argc, char *argv[])
 
 	thread_running = true;
 
-	TargetTracker tracker;
+	TargetTracker tracker(DT_US/((float)1e6));
 
 	while (!thread_should_exit)
 	{
 		tracker.update();
-		usleep(50000);
+		usleep(DT_US);
 	}
 
 	PX4_DEBUG("exiting.");

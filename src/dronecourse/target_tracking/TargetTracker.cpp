@@ -14,7 +14,7 @@
 
 #include <iostream>
 
-TargetTracker::TargetTracker() :
+TargetTracker::TargetTracker(float dt) :
     _attitude_sub(ORB_ID(vehicle_attitude), 10, 0),
     _position_sub(ORB_ID(vehicle_local_position), 10, 0),
     _target_position_pub(nullptr),
@@ -43,7 +43,6 @@ TargetTracker::TargetTracker() :
   h(2,2) = 1.0f;
   float vf[n] = {2.0f, 2.0f, 2.0f};
   matrix::Vector<float,n> v(vf);
-  float dt = 0.05f;
   _kf.init(f,w,h,v,dt);
 
 }
@@ -54,7 +53,6 @@ void TargetTracker::update()
 
   struct target_position_ned_s pos_msg;
   int instance;
-
   bool new_measure;
   orb_check(_polls[0].fd, &new_measure);
   if(new_measure)
