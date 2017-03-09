@@ -34,6 +34,9 @@ public:
 
 private:
     void update_subscriptions();
+    
+    void update_parameters();
+    
 
     PositionCtrl _pos_ctrl;
 
@@ -41,6 +44,13 @@ private:
     int _target_pos_sub;
     int _local_pos_sub;
 
+    // onboard parameters
+    param_t _p_pos_gain;
+    param_t _p_vel_gain;
+
+    // control parameters
+    float _pos_gain;
+    float _vel_gain;
 
     // navigation variables
     bool _has_target_pos_lock;
