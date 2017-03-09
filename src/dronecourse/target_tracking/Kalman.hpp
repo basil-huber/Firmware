@@ -63,6 +63,7 @@ public:
 
 		// set initial values for p and x
 		_p.setIdentity();
+		_p *= 100;	// TODO: this should be passed as paramenter to the init function
 		_x.setZero();
 	};
 

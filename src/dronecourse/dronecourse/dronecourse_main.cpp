@@ -67,6 +67,8 @@ static float pos_y = 0;
 static float pos_z = 5;
 static float yaw = 0;
 
+#define DT_US 50000
+
 /**
  * Deamon management function.
  */
@@ -215,7 +217,7 @@ int dronecourse_thread_main(int argc, char *argv[])
 			handler.set_yaw_command(yaw);
 		}
 		handler.update(dc_mode);
-		usleep(50000);
+		usleep(DT_US);
 	}
 
 	PX4_DEBUG("exiting.");

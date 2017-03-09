@@ -40,7 +40,7 @@ private:
 
     PositionCtrl _pos_ctrl;
 
-    // uORB subscriptions
+    // uORB subscriptions and advertisements
     int _target_pos_sub;
     int _local_pos_sub;
 
