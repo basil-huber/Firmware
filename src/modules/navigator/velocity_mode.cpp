@@ -13,12 +13,17 @@
 #include "../../dronecourse/dronecourse_utils.h"
 
 VelocityMode::VelocityMode(Navigator *navigator, const char *name) :
-  NavigatorMode(navigator, name)
+  MissionBlock(navigator, name),
+  _param_min_alt(this, "MIS_TAKEOFF_ALT", false),
+  mode(Mode::TAKEOFF)
 {
 	// subscribe to all instances of velocity setpoint messages
   for(int i = 0; i < ORB_MULTI_MAX_INSTANCES; i++){
     _velocity_sp_subs[i] = orb_subscribe_multi(ORB_ID(velocity_setpoint),i);    
   }
+
+  // load initial params
+  updateParams();
 }
 
 
@@ -30,13 +35,34 @@ void VelocityMode::on_inactive(){}
 
 void VelocityMode::on_active()
 {
-  // check if we received any velocity_setpoints
-  struct velocity_setpoint_s velocity_setpoint = {};
-  bool updated = orb_fetch_all(ORB_ID(velocity_setpoint), _velocity_sp_subs, &velocity_setpoint, ORB_MULTI_MAX_INSTANCES);
-
-  if(updated)
+  // state machine: in TAKEOFF mode until take off is finished, then switch to VELOCITY mode
+  switch(mode)
   {
-    set_velocity_command(velocity_setpoint.vx, velocity_setpoint.vy, velocity_setpoint.vz, velocity_setpoint.yaw);
+    case Mode::TAKEOFF:
+      set_takeoff_item(&_mission_item, _navigator->get_global_position()->alt + _param_min_alt.get(), 0);
+      if(is_mission_item_reached())
+      {
+        mode = Mode::VELOCITY;
+        PX4_INFO("Takeoff finished, switching to velocity mode");
+      }
+      else
+      {
+        mission_item_to_position_setpoint(&_mission_item, &_navigator->get_position_setpoint_triplet()->current);
+        _navigator->set_position_setpoint_triplet_updated();
+        break;
+      }
+      // no break here
+
+    case Mode::VELOCITY:
+      // check if we received any velocity_setpoints
+      struct velocity_setpoint_s velocity_setpoint = {};
+      bool updated = orb_fetch_all(ORB_ID(velocity_setpoint), _velocity_sp_subs, &velocity_setpoint, ORB_MULTI_MAX_INSTANCES);
+
+      if(updated)
+      {
+        set_velocity_command(velocity_setpoint.vx, velocity_setpoint.vy, velocity_setpoint.vz, velocity_setpoint.yaw);
+      }
+      break;
   }
 }
 

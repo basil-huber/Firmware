@@ -98,3 +98,5 @@ replay trystart
 sleep 3
 target_tracking start
 dronecourse start
+dronecourse follow
+commander mode auto:follow

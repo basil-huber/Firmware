@@ -141,7 +141,21 @@ int dronecourse_main(int argc, char *argv[])
 
 	if (!strcmp(argv[1], "status")) {
 		if (thread_running) {
-			PX4_INFO("is running");
+			switch(dc_mode)
+			{
+				case DronecourseHandler::DcMode::IDLE:
+					PX4_INFO("is running;  mode : IDLE");
+					break;
+				case DronecourseHandler::DcMode::POS_CTRL:
+					PX4_INFO("is running;  mode : POS_CTRL");
+					break;
+				case DronecourseHandler::DcMode::FOLLOW:
+					PX4_INFO("is running;  mode : FOLLOW");
+					break;
+				case DronecourseHandler::DcMode::MISSION:
+					PX4_INFO("is running;  mode : MISSION");
+					break;
+			}
 
 		} else {
 			PX4_INFO("not started");
