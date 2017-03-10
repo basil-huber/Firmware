@@ -35,7 +35,7 @@ TargetTracker::TargetTracker(float dt) :
   f(0,3) = 1.0f;
   f(1,4) = 1.0f;
   f(2,5) = 1.0f;
-  float wf[m] = {0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f};
+  float wf[m] = {0.0f, 0.0f, 0.0f, 0.2f, 0.2f, 0.2f};
   matrix::Vector<float,m> w(wf);
   matrix::Matrix<float,n,m> h;
   h(0,0) = 1.0f;
