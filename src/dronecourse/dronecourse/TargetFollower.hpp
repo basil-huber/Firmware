@@ -44,13 +44,25 @@ private:
     int _target_pos_sub;
     int _local_pos_sub;
 
-    // onboard parameters
+    // onboard parameter handles
     param_t _p_pos_gain;
     param_t _p_vel_gain;
-
+    param_t _p_var_thr_x;
+    param_t _p_var_thr_y;
+    param_t _p_var_thr_z;
+    param_t _p_var_thr_vx;
+    param_t _p_var_thr_vy;
+    param_t _p_var_thr_vz;
+    
     // control parameters
     float _pos_gain;
     float _vel_gain;
+    float _var_thr_x;
+    float _var_thr_y;
+    float _var_thr_z;
+    float _var_thr_vx;
+    float _var_thr_vy;
+    float _var_thr_vz;
 
     // navigation variables
     bool _has_target_pos_lock;

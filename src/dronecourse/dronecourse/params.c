@@ -7,18 +7,6 @@
  * @author Basil Huber LIS <basil.huber@gmail.com>
  */
 
-/**
-* TargetFollower velocity weight
-*
-* Selects weight of velocity error
-*
-* @min 0.0
-* @max 2.0
-* @decimal 2
-* @group Dronecourse
-*/
-PARAM_DEFINE_FLOAT(FOL_VEL, 1.0f);
-
 
 /**
 * TargetFollower position weight
@@ -31,3 +19,81 @@ PARAM_DEFINE_FLOAT(FOL_VEL, 1.0f);
 * @group Dronecourse
 */
 PARAM_DEFINE_FLOAT(FOL_POS, 0.1f);
+
+
+/**
+* TargetFollower threshold variance for X position estimate
+*
+* Threshold for confidence in target position estimate in X direction
+*
+* @min 0.0
+* @max 500.0
+* @decimal 2
+* @group Dronecourse
+*/
+PARAM_DEFINE_FLOAT(VAR_THR_X, 70.0f);
+
+
+/**
+* TargetFollower threshold variance for Y position estimate
+*
+* Threshold for confidence in target position estimate in Y direction
+*
+* @min 0.0
+* @max 500.0
+* @decimal 2
+* @group Dronecourse
+*/
+PARAM_DEFINE_FLOAT(VAR_THR_Y, 70.0f);
+
+
+/**
+* TargetFollower threshold variance for Z position estimate
+*
+* Threshold for confidence in target position estimate in Z direction
+*
+* @min 0.0
+* @max 500.0
+* @decimal 2
+* @group Dronecourse
+*/
+PARAM_DEFINE_FLOAT(VAR_THR_Z, 70.0f);
+
+
+/**
+* TargetFollower threshold variance for X velocity estimate
+*
+* Threshold for confidence in target velocity estimate in X direction
+*
+* @min 0.0
+* @max 500.0
+* @decimal 2
+* @group Dronecourse
+*/
+PARAM_DEFINE_FLOAT(VAR_THR_VX, 2.0f);
+
+
+/**
+* TargetFollower threshold variance for Y velocity estimate
+*
+* Threshold for confidence in target velocity estimate in Y direction
+*
+* @min 0.0
+* @max 500.0
+* @decimal 2
+* @group Dronecourse
+*/
+PARAM_DEFINE_FLOAT(VAR_THR_VY, 2.0f);
+
+
+/**
+* TargetFollower threshold variance for Z velocity estimate
+*
+* Threshold for confidence in target velocity estimate in Z direction
+*
+* @min 0.0
+* @max 500.0
+* @decimal 2
+* @group Dronecourse
+*/
+PARAM_DEFINE_FLOAT(VAR_THR_VZ, 2.0f);
