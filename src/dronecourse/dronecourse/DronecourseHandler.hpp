@@ -36,8 +36,9 @@ public:
 private:
 
 	void send_velocity_command(const matrix::Vector3f& vel_command, float yaw_command);
+	void send_velocity_command(const matrix::Vector3f& vel_command, float yaw_command, const matrix::Vector3f& pos_command);
 
-    orb_advert_t _velocity_sp_pub;
+    orb_advert_t _local_sp_pub;
 
     PositionCtrl _pos_ctrl;
 

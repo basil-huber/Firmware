@@ -9,6 +9,8 @@
 #pragma once
 
 #include "mission_block.h"
+#include <uORB/topics/dronecourse_local_setpoint.h>
+
 
 class Navigator;
 
@@ -29,11 +31,11 @@ public:
 
 private:
 
-    void set_velocity_command(float vx, float vy, float z, float yaw);
+    void set_velocity_command(dronecourse_local_setpoint_s& local_sp);
 
 
     // uORB subscriptions
-    int _velocity_sp_subs[ORB_MULTI_MAX_INSTANCES];
+    int _local_sp_subs[ORB_MULTI_MAX_INSTANCES];
 
     // onboard parameters
 	control::BlockParamFloat _param_min_alt;

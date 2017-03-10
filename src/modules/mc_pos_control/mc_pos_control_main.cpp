@@ -1147,12 +1147,14 @@ MulticopterPositionControl::control_non_manual(float dt)
 
 		_vel_sp(0) = _pos_sp_triplet.current.vx;
 		_vel_sp(1) = _pos_sp_triplet.current.vy;
+		// ------ ADDED FOR DRONECOURSE -------
+		_vel_sp(2) = _pos_sp_triplet.current.vz;
+		_run_alt_control = false;
 		_run_pos_control = false;
-		if(!_pos_sp_triplet.current.alt_valid)
-		{
-			_vel_sp(2) = _pos_sp_triplet.current.vz;
-			_run_alt_control = false;
-		}
+		_pos_sp(0) = _pos_sp_triplet.current.x;
+		_pos_sp(1) = _pos_sp_triplet.current.y;
+		_pos_sp(2) = _pos_sp_triplet.current.z;
+		// ------------------------------------
 	}
 
 	/* use constant descend rate when landing, ignore altitude setpoint */

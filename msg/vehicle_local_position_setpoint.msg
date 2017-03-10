@@ -1,3 +1,4 @@
+# TOPCIS vehicle_local_position_setpoint dronecourse_local_position_setpoint
 # Local position setpoint in NED frame
 
 float32 x		# in meters NED

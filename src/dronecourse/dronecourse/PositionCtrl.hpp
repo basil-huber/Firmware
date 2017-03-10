@@ -30,6 +30,8 @@ public:
 
     const matrix::Vector3f& get_velocity_command() const {return _vel_command;};
 
+    const matrix::Vector3f& get_goal_position() const {return _goal_pos;};
+
     float get_yaw_command() const {return _yaw_command;};
 
     const matrix::Vector3f& get_current_position() const {return _current_pos;};
