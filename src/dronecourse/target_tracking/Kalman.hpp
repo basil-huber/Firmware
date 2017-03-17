@@ -33,27 +33,11 @@ public:
 	   	_h_t = _h.transpose();
 
 		// Calculate q and psi
-		matrix::Matrix<float,M,M> gwg;
-		for(int i=0; i<M; i++)
-			gwg(i,i) = w(i);
-		matrix::SquareMatrix<float, 2*M> a;
-		a.set(-f, 0,0);
-		a.set(gwg,0,M);
-		a.set(f.transpose(), M,M);
-		a *= dt;
+		_dt = dt;
+		_f = f;
+		_w = w;
+		calcPhiQ();
 
-		matrix::SquareMatrix<float, 2*M> b = matrix::expm(a);
-		for(int i=0; i<M; i++)
-		{
-			for(int j=0; j<M; j++)
-			{
-				_phi_t(i,j) = b(i+M,j+M);
-				_q(i,j) = b(i,j+M);
-			}
-		}
-
-		_phi = _phi_t.transpose();
-		_q = _phi * _q;
 
 		// set r
 		for(int i=0; i<N; i++)
@@ -106,11 +90,21 @@ public:
 		return variances;
 	}
 
+	void setSystemNoise(const matrix::Vector<float,M>& w)
+	{
+		_w = w;
+		calcPhiQ();
+	}
+
 private:
 	matrix::SquareMatrix<float,M>   _q;			//< Covariance of system (model) noise [constant]
 	matrix::SquareMatrix<float,N>   _r;			//< Covariance of measurement    noise [constant]
 	matrix::Matrix<float,N,M>		_h;			//< measurement (design) matrix 	   [constant]
 	matrix::SquareMatrix<float,M>   _phi;		//< state transition matrix 		   [constant]
+
+	matrix::SquareMatrix<float,M> 	_f;			//< Dynamic matrix (only stored to recalculated phi and q in calcPhiQ(..))
+	matrix::Vector<float,M>			_w; 		//< system noise standard deviations (diagonal of system noise covariance matrix)
+	float 							_dt;		//< time increment (only stored to recalculated phi and q in calcPhiQ(..))
 
 	matrix::SquareMatrix<float,M> 	_p;   		//< A posteriori (estimated) state covariance
 	matrix::Vector<float,M> 		_x;   		//< A posteriori (estimated) state
@@ -118,4 +112,29 @@ private:
 	// transposed matrices for faster calculation
 	matrix::SquareMatrix<float,M> 	_phi_t;
 	matrix::Matrix<float,M,N>		_h_t;
+
+	void calcPhiQ()
+	{
+		matrix::Matrix<float,M,M> gwg;
+		for(int i=0; i<M; i++)
+			gwg(i,i) = _w(i);
+		matrix::SquareMatrix<float, 2*M> a;
+		a.set(-_f, 0,0);
+		a.set(gwg,0,M);
+		a.set(_f.transpose(), M,M);
+		a *= _dt;
+
+		matrix::SquareMatrix<float, 2*M> b = matrix::expm(a);
+		for(int i=0; i<M; i++)
+		{
+			for(int j=0; j<M; j++)
+			{
+				_phi_t(i,j) = b(i+M,j+M);
+				_q(i,j) = b(i,j+M);
+			}
+		}
+
+		_phi = _phi_t.transpose();
+		_q = _phi * _q;
+	}
 };

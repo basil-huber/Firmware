@@ -70,7 +70,7 @@ PARAM_DEFINE_FLOAT(VAR_THR_Z, 70.0f);
 * @decimal 2
 * @group Dronecourse
 */
-PARAM_DEFINE_FLOAT(VAR_THR_VX, 2.0f);
+PARAM_DEFINE_FLOAT(VAR_THR_VX, 1.0f);
 
 
 /**
@@ -83,7 +83,7 @@ PARAM_DEFINE_FLOAT(VAR_THR_VX, 2.0f);
 * @decimal 2
 * @group Dronecourse
 */
-PARAM_DEFINE_FLOAT(VAR_THR_VY, 2.0f);
+PARAM_DEFINE_FLOAT(VAR_THR_VY, 1.0f);
 
 
 /**
@@ -96,4 +96,78 @@ PARAM_DEFINE_FLOAT(VAR_THR_VY, 2.0f);
 * @decimal 2
 * @group Dronecourse
 */
-PARAM_DEFINE_FLOAT(VAR_THR_VZ, 2.0f);
+PARAM_DEFINE_FLOAT(VAR_THR_VZ, 1.0f);
+
+
+/**
+* TargetTracker: Kalman system variance for X position
+*
+* confidence in predicted target position in X direction
+*
+* @min 0.0
+* @max 500.0
+* @decimal 2
+* @group Dronecourse
+*/
+PARAM_DEFINE_FLOAT(KAL_SYS_NOISE_X, 0.01f);
+
+/**
+* TargetTracker: Kalman system variance for Y position
+*
+* confidence in predicted target position in Y direction
+*
+* @min 0.0
+* @max 500.0
+* @decimal 2
+* @group Dronecourse
+*/
+PARAM_DEFINE_FLOAT(KAL_SYS_NOISE_Y, 0.01f);
+
+
+/**
+* TargetTracker: Kalman system variance for Z position
+*
+* confidence in predicted target position in Z direction
+*
+* @min 0.0
+* @max 500.0
+* @decimal 2
+* @group Dronecourse
+*/
+PARAM_DEFINE_FLOAT(KAL_SYS_NOISE_Z, 0.01f);
+
+/**
+* TargetTracker: Kalman system variance for X velocity
+*
+* confidence in predicted target velocity in X direction
+*
+* @min 0.0
+* @max 500.0
+* @decimal 2
+* @group Dronecourse
+*/
+PARAM_DEFINE_FLOAT(KAL_SYS_NOISE_VX, 0.4f);
+
+/**
+* TargetTracker: Kalman system variance for Y velocity
+*
+* confidence in predicted target velocity in Y direction
+*
+* @min 0.0
+* @max 500.0
+* @decimal 2
+* @group Dronecourse
+*/
+PARAM_DEFINE_FLOAT(KAL_SYS_NOISE_VY, 0.4f);
+
+/**
+* TargetTracker: Kalman system variance for Z velocity
+*
+* confidence in predicted target velocity in Z direction
+*
+* @min 0.0
+* @max 500.0
+* @decimal 2
+* @group Dronecourse
+*/
+PARAM_DEFINE_FLOAT(KAL_SYS_NOISE_VZ, 0.4f);

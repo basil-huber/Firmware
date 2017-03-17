@@ -9,6 +9,7 @@
 #include "TargetTracker.hpp"
 #include <matrix/math.hpp>
 #include <uORB/topics/target_position_ned.h>
+#include <float.h>
 
 
 
@@ -20,7 +21,13 @@ TargetTracker::TargetTracker(float dt) :
     _target_position_pub(nullptr),
     _target_position_filtered_pub(nullptr),
     _focal_length(IMAGE_WIDTH2 / tan(HFOV_DEFAULT_/2.0f)),
-    _target_id(0)
+    _target_id(0),
+    _p_kal_sys_noise_x(param_find("KAL_SYS_NOISE_X")),
+    _p_kal_sys_noise_y(param_find("KAL_SYS_NOISE_Y")),
+    _p_kal_sys_noise_z(param_find("KAL_SYS_NOISE_Z")),
+    _p_kal_sys_noise_vx(param_find("KAL_SYS_NOISE_VX")),
+    _p_kal_sys_noise_vy(param_find("KAL_SYS_NOISE_VY")),
+    _p_kal_sys_noise_vz(param_find("KAL_SYS_NOISE_VZ"))
 {
 	// subscribe to landing target messages
 	_polls[0].fd = orb_subscribe(ORB_ID(landing_target));
@@ -49,6 +56,7 @@ TargetTracker::TargetTracker(float dt) :
 
 void TargetTracker::update()
 {
+  update_parameters();
   _kf.predict();
 
   struct target_position_ned_s pos_msg;
@@ -90,6 +98,64 @@ void TargetTracker::update()
   matrix::Vector<float,6> x_var = _kf.getStateVariances();
   pack_target_position(pos_msg, x_est, x_var);
   orb_publish_auto(ORB_ID(target_position_ned_filtered), &_target_position_filtered_pub, &pos_msg, &instance, ORB_PRIO_HIGH);
+}
+
+
+void TargetTracker::update_parameters()
+{
+  bool new_sys_noise = false;
+  float temp;
+
+  param_get(_p_kal_sys_noise_x, &temp);
+  if(fabsf(temp - _kal_sys_noise_x) > FLT_EPSILON)
+  {
+    new_sys_noise = true;
+    _kal_sys_noise_x = temp;
+  }
+
+  param_get(_p_kal_sys_noise_y, &temp);
+  if(fabsf(temp - _kal_sys_noise_y) > FLT_EPSILON)
+  {
+    new_sys_noise = true;
+    _kal_sys_noise_y = temp;
+  }
+
+  param_get(_p_kal_sys_noise_z, &temp);
+  if(fabsf(temp - _kal_sys_noise_z) > FLT_EPSILON)
+  {
+    new_sys_noise = true;
+    _kal_sys_noise_z = temp;
+  }
+
+  param_get(_p_kal_sys_noise_vx, &temp);
+  if(fabsf(temp - _kal_sys_noise_vx) > FLT_EPSILON)
+  {
+    new_sys_noise = true;
+    _kal_sys_noise_vx = temp;
+  }
+
+  param_get(_p_kal_sys_noise_vy, &temp);
+  if(fabsf(temp - _kal_sys_noise_vy) > FLT_EPSILON)
+  {
+    new_sys_noise = true;
+    _kal_sys_noise_vy = temp;
+  }
+
+  param_get(_p_kal_sys_noise_vz, &temp);
+  if(fabsf(temp - _kal_sys_noise_vz) > FLT_EPSILON)
+  {
+    new_sys_noise = true;
+    _kal_sys_noise_vz = temp;
+  }
+
+  if(new_sys_noise)
+  {
+    PX4_INFO("Updating Kalman system noise");
+    float ww[] = {_kal_sys_noise_x,_kal_sys_noise_y,_kal_sys_noise_z,_kal_sys_noise_vx,_kal_sys_noise_vy,_kal_sys_noise_vz};
+    matrix::Vector<float, 6> w(ww);
+    _kf.setSystemNoise(w);
+  }
+
 }
 
 

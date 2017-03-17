@@ -32,7 +32,7 @@ public:
 	void update();
 
 private:
-
+    void update_parameters();
 	void pack_target_position(struct target_position_ned_s& pos_msg, const matrix::Vector3f& pos);
     void pack_target_position(struct target_position_ned_s& pos_msg, const matrix::Vector<float,6>& pos_vel, const matrix::Vector<float,6>& variance);
 
@@ -51,6 +51,22 @@ private:
     KalmanFilter<6,3> _kf;
 
     int _target_id;
+
+    // onboard parameter handles
+    param_t _p_kal_sys_noise_x;
+    param_t _p_kal_sys_noise_y;
+    param_t _p_kal_sys_noise_z;
+    param_t _p_kal_sys_noise_vx;
+    param_t _p_kal_sys_noise_vy;
+    param_t _p_kal_sys_noise_vz;
+    // onboard parameter values
+    float _kal_sys_noise_x;
+    float _kal_sys_noise_y;
+    float _kal_sys_noise_z;
+    float _kal_sys_noise_vx;
+    float _kal_sys_noise_vy;
+    float _kal_sys_noise_vz;
+
 };
 
 
