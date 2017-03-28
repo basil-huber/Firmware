@@ -56,9 +56,10 @@ void TargetFollower::update()
       matrix::Vector3f pos_err = _target_pos - _current_pos;
 
       _vel_command = _pos_gain * pos_err + _target_vel;
+      _vel_command(2) = 0.0f;
 
   } else {
-    matrix::Vector3f goal_pos(20, 70, -70);
+    matrix::Vector3f goal_pos(0, 20, -70);
     _pos_ctrl.set_position_command(goal_pos);
     _pos_ctrl.set_yaw_command(0);
     _pos_ctrl.update();
