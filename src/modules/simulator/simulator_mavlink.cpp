@@ -471,13 +471,11 @@ void Simulator::handle_message(mavlink_message_t *msg, bool publish)
 		}
 		break;
 
-	case MAVLINK_MSG_ID_LANDING_TARGET:
-		mavlink_landing_target_t target_msg;
-		mavlink_msg_landing_target_decode(msg, &target_msg);
-		publish_landing_target(&target_msg);
+	case MAVLINK_MSG_ID_TARGET_POSITION_IMAGE:
+		mavlink_target_position_image_t target_msg;
+		mavlink_msg_target_position_image_decode(msg, &target_msg);
+		publish_target_pos(&target_msg);
 		break;
-
-
 	}
 
 }
@@ -580,6 +578,7 @@ void Simulator::send()
 			// got new data to read, update all topics
 			poll_topics();
 			send_controls();
+			update_gimbal();
 		}
 	}
 }
@@ -749,6 +748,7 @@ void Simulator::pollForMAVLinkMessages(bool publish, int udp_port)
 	}
 
 	_vehicle_status_sub = orb_subscribe(ORB_ID(vehicle_status));
+	_gimbal_command_sub = orb_subscribe(ORB_ID(gimbal_command));
 
 	// got data from simulator, now activate the sending thread
 	pthread_create(&sender_thread, &sender_thread_attr, Simulator::sending_trampoline, nullptr);
@@ -1090,25 +1090,38 @@ int Simulator::publish_distance_topic(mavlink_distance_sensor_t *dist_mavlink)
 	return OK;
 }
 
-int Simulator::publish_landing_target(mavlink_landing_target_t *msg)
+int Simulator::publish_target_pos(mavlink_target_position_image_t *msg)
 {
 	uint64_t timestamp = hrt_absolute_time();
 
-	struct landing_target_s target;
-	memset(&target, 0, sizeof(target));	// ???
+	struct target_position_image_s target;
+	// memset(&target, 0, sizeof(target));	// ???
 
 	target.timestamp = timestamp;
 	target.time_usec  = msg->time_usec;
-	target.angle_x    = msg->angle_x;
-	target.angle_y    = msg->angle_y;
-	target.distance   = msg->distance;
-	target.size_x     = msg->size_x;
-	target.size_y     = msg->size_y;
+	target.x          = msg->x;
+	target.y    	  = msg->y;
+	target.dist   	  = msg->dist;
+	target.roll 	  = msg->roll;
+	target.pitch      = msg->pitch;
 	target.target_num = msg->target_num;
-	target.frame      = msg->frame;
 
 	int target_multi;
-	orb_publish_auto(ORB_ID(landing_target), &_landing_target_pub, &target, &target_multi, ORB_PRIO_HIGH);
+	orb_publish_auto(ORB_ID(target_position_image), &_target_pos_pub, &target, &target_multi, ORB_PRIO_HIGH);
 
 	return OK;
+}
+
+void Simulator::update_gimbal()
+{
+	bool updated;
+	orb_check(_gimbal_command_sub, &updated);
+	if(updated) {
+		gimbal_command_s msg;
+		orb_copy(ORB_ID(gimbal_command), _gimbal_command_sub, &msg);
+		mavlink_gimbal_command_t mav_msg;
+		mav_msg.roll = msg.roll;
+		mav_msg.pitch = msg.pitch;
+		send_mavlink_message(MAVLINK_MSG_ID_GIMBAL_COMMAND, &mav_msg, 200);
+	}
 }

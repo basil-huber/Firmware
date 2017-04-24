@@ -65,6 +65,10 @@ static bool new_pos = false;
 static float pos_x = 0;
 static float pos_y = 0;
 static float pos_z = 5;
+static bool new_gimbal_rot = false;
+static bool new_gimbal_auto = false;
+static float pitch = 0;
+static float roll = 0;
 static float yaw = 0;
 
 #define DT_US 50000
@@ -168,7 +172,7 @@ int dronecourse_main(int argc, char *argv[])
 
 	if (!strcmp(argv[1], "pos"))
 	{
-		if(argc < 6){
+		if(argc < 5){
 			usage("coordinates missing");
 			return 1;
 		}
@@ -178,20 +182,49 @@ int dronecourse_main(int argc, char *argv[])
 		pos_y = strtod(argv[3], &end);
 		pos_z = strtod(argv[4], &end);
 
-		// if provided, set new yaw setpoint
-		if(argc >= 6){
-			yaw = strtod(argv[5], &end);
-		}
 		new_pos = true;
 		dc_mode = DronecourseHandler::DcMode::POS_CTRL;
 		PX4_INFO("Setting position command to ( %f | %f | %f )", (double)pos_x, (double)pos_y, (double)pos_z);
 		return 0;
-	}
-
-	if (!strcmp(argv[1], "follow"))
+	} else if (!strcmp(argv[1], "follow"))
 	{
 		dc_mode = DronecourseHandler::DcMode::FOLLOW;
 		PX4_INFO("Switching to follow mode");
+		return 0;
+	} else if (!strcmp(argv[1], "gimbal"))
+	{
+		if(argc < 3)
+		{
+			usage("gimbal: arguments missing");
+			return 1;
+		}
+
+		if(!strcmp(argv[2], "auto"))
+		{
+			PX4_INFO("Setting gimbal to automatic");
+			new_gimbal_auto = true;
+			new_gimbal_rot = false;
+			return 0;
+		}
+		else if(argc >= 5)
+		{
+			char* end;
+			roll = strtod(argv[2], &end);
+			pitch = strtod(argv[3], &end);
+			yaw = strtod(argv[4], &end);
+
+			new_gimbal_rot = true;
+			new_gimbal_auto = false;
+			PX4_INFO("Setting gimbal command to ( %f | %f )", (double)roll, (double)pitch);
+			return 0;
+		} else
+		{
+			usage("gimbal: coordinates missing");
+			return 0;
+		}
+	} else if(!strcmp(argv[1], "mission"))
+	{
+		dc_mode = DronecourseHandler::DcMode::MISSION;
 		return 0;
 	}
 
@@ -214,7 +247,14 @@ int dronecourse_thread_main(int argc, char *argv[])
 		if (dc_mode == DronecourseHandler::DcMode::POS_CTRL && new_pos)
 		{
 			handler.set_position_command(pos_x, pos_y, pos_z);
-			handler.set_yaw_command(yaw);
+		}
+		if (new_gimbal_rot)
+		{
+			handler.gimbal().set_command(roll, pitch, yaw);
+			new_gimbal_rot = false;
+		}else if(new_gimbal_auto){
+			handler.gimbal().setAutomatic();
+			new_gimbal_auto  = false;
 		}
 		handler.update(dc_mode);
 		usleep(DT_US);

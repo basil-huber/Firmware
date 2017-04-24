@@ -22,18 +22,21 @@ TargetTracker::TargetTracker(float dt) :
     _target_position_filtered_pub(nullptr),
     _focal_length(IMAGE_WIDTH2 / tan(HFOV_DEFAULT_/2.0f)),
     _target_id(0),
-    _p_kal_sys_noise_x(param_find("KAL_SYS_NOISE_X")),
-    _p_kal_sys_noise_y(param_find("KAL_SYS_NOISE_Y")),
-    _p_kal_sys_noise_z(param_find("KAL_SYS_NOISE_Z")),
-    _p_kal_sys_noise_vx(param_find("KAL_SYS_NOISE_VX")),
-    _p_kal_sys_noise_vy(param_find("KAL_SYS_NOISE_VY")),
-    _p_kal_sys_noise_vz(param_find("KAL_SYS_NOISE_VZ"))
+    _p_kal_sys_noise {param_find("KAL_SYS_NOISE_X"),
+                      param_find("KAL_SYS_NOISE_Y"),
+                      param_find("KAL_SYS_NOISE_Z"),
+                      param_find("KAL_SYS_NOISE_VX"),
+                      param_find("KAL_SYS_NOISE_VY"),
+                      param_find("KAL_SYS_NOISE_VZ")},
+    _p_kal_meas_noise {param_find("KAL_MEAS_NOISE_X"),
+                      param_find("KAL_MEAS_NOISE_Y"),
+                      param_find("KAL_MEAS_NOISE_Z")},
+    _kal_sys_noise {0.0f},
+    _kal_meas_noise {0.0f}
 {
-	// subscribe to landing target messages
-	_polls[0].fd = orb_subscribe(ORB_ID(landing_target));
+	// subscribe to target_position_image messages
+	_polls[0].fd = orb_subscribe(ORB_ID(target_position_image));
 	_polls[0].events = POLLIN;
-
-
 
   // set up kalman filter
   const uint8_t m = 6;  // size of state vector
@@ -42,14 +45,12 @@ TargetTracker::TargetTracker(float dt) :
   f(0,3) = 1.0f;
   f(1,4) = 1.0f;
   f(2,5) = 1.0f;
-  float wf[m] = {0.0f, 0.0f, 0.0f, 0.2f, 0.2f, 0.2f};
-  matrix::Vector<float,m> w(wf);
+  matrix::Vector<float,m> w(_kal_sys_noise);
   matrix::Matrix<float,n,m> h;
   h(0,0) = 1.0f;
   h(1,1) = 1.0f;
   h(2,2) = 1.0f;
-  float vf[n] = {2.0f, 2.0f, 2.0f};
-  matrix::Vector<float,n> v(vf);
+  matrix::Vector<float,n> v(_kal_meas_noise);
   _kf.init(f,w,h,v,dt);
 
 }
@@ -65,33 +66,38 @@ void TargetTracker::update()
   orb_check(_polls[0].fd, &new_measure);
   if(new_measure)
   {
-        // update vehicle attitude and position
-        _attitude_sub.update();
-        _position_sub.update();
+    // update vehicle attitude and position
+    _attitude_sub.update();
+    _position_sub.update();
 
-        /* copy data to local buffers */
-        struct landing_target_s landing_target;
-        orb_copy(ORB_ID(landing_target), _polls[0].fd, &landing_target);
+    /* copy data to local buffers */
+    struct target_position_image_s target_pos;
+    orb_copy(ORB_ID(target_position_image), _polls[0].fd, &target_pos);
+    
+    // compute target position in image frame
+    matrix::Vector3f target_pos_if(target_pos.x - IMAGE_WIDTH2, target_pos.y - IMAGE_HEIGHT2, _focal_length); // target position in image frame
+    float scale = target_pos.dist / target_pos_if.norm();
+    target_pos_if *= scale;
 
-        // compute target position in body frame
-        float x = -(landing_target.angle_y - IMAGE_HEIGHT2);
-        float y = landing_target.angle_x - IMAGE_WIDTH2;
-        float dist = landing_target.distance;
-        float scale = dist / sqrtf(x*x + y*y + _focal_length*_focal_length);
-        matrix::Vector3f target_pos_bf(x*scale, y*scale, _focal_length*scale);  // target position in bf
+    // convert to camera frame (camera's body frame)
+    matrix::Quaternion<float> image_rot(matrix::Euler<float>(0.0f, -M_PI/2.0, -M_PI/2.0));
+    matrix::Vector3f target_pos_cf = image_rot.conjugate(target_pos_if);
 
-        // convert to local frame (NED)
-        matrix::Quaternion<float> att_vehicle(_attitude_sub.get().q);
-        matrix::Vector3f pos_vehicle(_position_sub.get().x, _position_sub.get().y, _position_sub.get().z);
-        matrix::Vector3f target_pos_lf = att_vehicle.conjugate_inversed(target_pos_bf);
-        target_pos_lf += pos_vehicle;
+    // convert to body frame
+    matrix::Quaternion<float> camera_rot(matrix::Euler<float>(target_pos.roll, target_pos.pitch, 0.0f));
+    matrix::Vector3f target_pos_bf = camera_rot.conjugate_inversed(target_pos_cf);
 
-
-        pack_target_position(pos_msg, target_pos_lf);
-        orb_publish_auto(ORB_ID(target_position_ned), &_target_position_pub, &pos_msg, &instance, ORB_PRIO_HIGH);
+    // convert to local frame (NED)
+    matrix::Quaternion<float> att_vehicle(_attitude_sub.get().q);
+    matrix::Vector3f pos_vehicle(_position_sub.get().x, _position_sub.get().y, _position_sub.get().z);
+    matrix::Vector3f target_pos_lf = att_vehicle.conjugate_inversed(target_pos_bf);
+    target_pos_lf += pos_vehicle;
 
 
-        _kf.correct(target_pos_lf);
+    pack_target_position(pos_msg, target_pos_lf);
+    orb_publish_auto(ORB_ID(target_position_ned), &_target_position_pub, &pos_msg, &instance, ORB_PRIO_HIGH);
+
+    _kf.correct(target_pos_lf);
   }
 
   matrix::Vector<float,6> x_est = _kf.getStateEstimate();
@@ -106,56 +112,39 @@ void TargetTracker::update_parameters()
   bool new_sys_noise = false;
   float temp;
 
-  param_get(_p_kal_sys_noise_x, &temp);
-  if(fabsf(temp - _kal_sys_noise_x) > FLT_EPSILON)
+  for(uint8_t i = 0; i < 6; i++)
   {
-    new_sys_noise = true;
-    _kal_sys_noise_x = temp;
-  }
-
-  param_get(_p_kal_sys_noise_y, &temp);
-  if(fabsf(temp - _kal_sys_noise_y) > FLT_EPSILON)
-  {
-    new_sys_noise = true;
-    _kal_sys_noise_y = temp;
-  }
-
-  param_get(_p_kal_sys_noise_z, &temp);
-  if(fabsf(temp - _kal_sys_noise_z) > FLT_EPSILON)
-  {
-    new_sys_noise = true;
-    _kal_sys_noise_z = temp;
-  }
-
-  param_get(_p_kal_sys_noise_vx, &temp);
-  if(fabsf(temp - _kal_sys_noise_vx) > FLT_EPSILON)
-  {
-    new_sys_noise = true;
-    _kal_sys_noise_vx = temp;
-  }
-
-  param_get(_p_kal_sys_noise_vy, &temp);
-  if(fabsf(temp - _kal_sys_noise_vy) > FLT_EPSILON)
-  {
-    new_sys_noise = true;
-    _kal_sys_noise_vy = temp;
-  }
-
-  param_get(_p_kal_sys_noise_vz, &temp);
-  if(fabsf(temp - _kal_sys_noise_vz) > FLT_EPSILON)
-  {
-    new_sys_noise = true;
-    _kal_sys_noise_vz = temp;
+    param_get(_p_kal_sys_noise[i], &temp);
+    if(fabsf(temp - _kal_sys_noise[i]) > FLT_EPSILON)
+    {
+      new_sys_noise = true;
+      _kal_sys_noise[i] = temp;
+    }
   }
 
   if(new_sys_noise)
   {
     PX4_INFO("Updating Kalman system noise");
-    float ww[] = {_kal_sys_noise_x,_kal_sys_noise_y,_kal_sys_noise_z,_kal_sys_noise_vx,_kal_sys_noise_vy,_kal_sys_noise_vz};
-    matrix::Vector<float, 6> w(ww);
+    matrix::Vector<float, 6> w(_kal_sys_noise);
     _kf.setSystemNoise(w);
   }
 
+  bool new_meas_noise = false;
+  for(uint8_t i = 0; i < 6; i++)
+  {
+    param_get(_p_kal_meas_noise[i], &temp);
+    if(fabsf(temp - _kal_meas_noise[i]) > FLT_EPSILON)
+    {
+      new_meas_noise = true;
+      _kal_meas_noise[i] = temp;
+    }
+  }
+
+  if(new_meas_noise)
+  {
+    PX4_INFO("Updating Kalman measurement noise");
+    _kf.setMeasureNoise(matrix::Vector<float,3>(_kal_meas_noise));
+  }
 }
 
 

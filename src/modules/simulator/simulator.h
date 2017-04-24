@@ -46,7 +46,6 @@
 #include <uORB/topics/vehicle_global_position.h>
 #include <uORB/topics/vehicle_status.h>
 #include <uORB/topics/battery_status.h>
-#include <uORB/topics/landing_target.h>
 #include <drivers/drv_accel.h>
 #include <drivers/drv_gyro.h>
 #include <drivers/drv_baro.h>
@@ -59,8 +58,13 @@
 #include <uORB/topics/optical_flow.h>
 #include <uORB/topics/distance_sensor.h>
 #include <v1.0/mavlink_types.h>
-#include <v1.0/common/mavlink.h>
+#include <v1.0/dronecourse/mavlink.h>
 #include <geo/geo.h>
+
+#include <uORB/topics/target_position_image.h>
+#include <uORB/topics/gimbal_command.h>
+
+
 namespace simulator
 {
 
@@ -244,7 +248,7 @@ private:
 		_flow_pub(nullptr),
 		_dist_pub(nullptr),
 		_battery_pub(nullptr),
-		_landing_target_pub(nullptr),
+		_target_pos_pub(nullptr),
 		_initialized(false),
 		_system_type(0)
 #ifndef __PX4_QURT
@@ -257,6 +261,7 @@ private:
 		_vehicle_attitude_sub(-1),
 		_manual_sub(-1),
 		_vehicle_status_sub(-1),
+		_gimbal_command_sub(-1),
 		_hil_local_proj_ref(),
 		_hil_local_proj_inited(false),
 		_hil_ref_lat(0),
@@ -318,7 +323,7 @@ private:
 	orb_advert_t _flow_pub;
 	orb_advert_t _dist_pub;
 	orb_advert_t _battery_pub;
-	orb_advert_t _landing_target_pub;
+	orb_advert_t _target_pos_pub;
 
 	bool _initialized;
 
@@ -332,7 +337,7 @@ private:
 	int publish_sensor_topics(mavlink_hil_sensor_t *imu);
 	int publish_flow_topic(mavlink_hil_optical_flow_t *flow);
 	int publish_distance_topic(mavlink_distance_sensor_t *dist);
-	int publish_landing_target(mavlink_landing_target_t *msg);
+	int publish_target_pos(mavlink_target_position_image_t *msg);
 
 #ifndef __PX4_QURT
 	// uORB publisher handlers
@@ -346,6 +351,7 @@ private:
 	int _vehicle_attitude_sub;
 	int _manual_sub;
 	int _vehicle_status_sub;
+	int _gimbal_command_sub;
 
 	// hil map_ref data
 	struct map_projection_reference_s _hil_local_proj_ref;
@@ -371,6 +377,7 @@ private:
 	void send_mavlink_message(const uint8_t msgid, const void *msg, uint8_t component_ID);
 	void update_sensors(mavlink_hil_sensor_t *imu);
 	void update_gps(mavlink_hil_gps_t *gps_sim);
+	void update_gimbal();
 	static void *sending_trampoline(void *);
 	void send();
 #endif

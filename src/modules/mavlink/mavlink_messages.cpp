@@ -46,6 +46,7 @@
 #include "mavlink_messages.h"
 #include <v1.0/dronecourse/mavlink_msg_target_position_ned.h>
 #include <v1.0/dronecourse/mavlink_msg_target_position_ned_filtered.h>
+#include <v1.0/dronecourse/mavlink_msg_target_position_image.h>
 
 #include <commander/px4_custom_mode.h>
 #include <drivers/drv_pwm_output.h>
@@ -92,7 +93,7 @@
 #include <uORB/topics/wind_estimate.h>
 #include <uORB/topics/mount_orientation.h>
 #include <uORB/topics/collision_report.h>
-#include <uORB/topics/landing_target.h>
+#include <uORB/topics/target_position_image.h>
 #include <uORB/topics/target_position_ned.h>
 #include <uORB/uORB.h>
 
@@ -3932,20 +3933,20 @@ protected:
 };
 
 
-class MavlinkStreamLandingTarget : public MavlinkStream
+class MavlinkStreamTargetPositionImage : public MavlinkStream
 {
 public:
     const char *get_name() const
     {
-        return MavlinkStreamLandingTarget::get_name_static();
+        return MavlinkStreamTargetPositionImage::get_name_static();
     }
     static const char *get_name_static()
     {
-        return "LANDING_TARGET";
+        return "TARGET_POSITION_IMAGE";
     }
     static uint16_t get_id_static()
 	{
-		return MAVLINK_MSG_ID_LANDING_TARGET;
+		return MAVLINK_MSG_ID_TARGET_POSITION_IMAGE;
 	}
     uint16_t get_id()
     {
@@ -3953,44 +3954,43 @@ public:
     }
     static MavlinkStream *new_instance(Mavlink *mavlink)
     {
-        return new MavlinkStreamLandingTarget(mavlink);
+        return new MavlinkStreamTargetPositionImage(mavlink);
     }
     unsigned get_size()
     {
-        return MAVLINK_MSG_ID_LANDING_TARGET_LEN + MAVLINK_NUM_NON_PAYLOAD_BYTES;
+        return MAVLINK_MSG_ID_TARGET_POSITION_IMAGE_LEN + MAVLINK_NUM_NON_PAYLOAD_BYTES;
     }
 
 private:
     MavlinkOrbSubscription *_sub;
-    uint64_t _landing_target_time;
+    uint64_t _target_pos_time;
 
 
     /* do not allow top copying this class */
-    MavlinkStreamLandingTarget(MavlinkStreamLandingTarget &);
-    MavlinkStreamLandingTarget& operator = (const MavlinkStreamLandingTarget &);
+    MavlinkStreamTargetPositionImage(MavlinkStreamTargetPositionImage &);
+    MavlinkStreamTargetPositionImage& operator = (const MavlinkStreamTargetPositionImage &);
 
 protected:
-    explicit MavlinkStreamLandingTarget(Mavlink *mavlink) : MavlinkStream(mavlink),
-        _sub(_mavlink->add_orb_subscription(ORB_ID(landing_target))),  // make sure you enter the name of your uorb topic here
-        _landing_target_time(0)
+    explicit MavlinkStreamTargetPositionImage(Mavlink *mavlink) : MavlinkStream(mavlink),
+        _sub(_mavlink->add_orb_subscription(ORB_ID(target_position_image))),  // make sure you enter the name of your uorb topic here
+        _target_pos_time(0)
     {}
 
     void send(const hrt_abstime t)
     {
-        struct landing_target_s _landing_target;    //make sure ca_traj_struct_s is the definition of your uorb topic
+        struct target_position_image_s _target_pos;
 
-        if (_sub->update(&_landing_target_time, &_landing_target)) {
-            mavlink_landing_target_t mavlink_msg;  //make sure mavlink_ca_trajectory_t is the definition of your custom mavlink message
+        if (_sub->update(&_target_pos_time, &_target_pos)) {
+            mavlink_target_position_image_t mavlink_msg;  //make sure mavlink_ca_trajectory_t is the definition of your custom mavlink message
 
-            mavlink_msg.time_usec  = _landing_target.time_usec;
-            mavlink_msg.angle_x    = _landing_target.angle_x;
-            mavlink_msg.angle_y    = _landing_target.angle_y;
-            mavlink_msg.distance   = _landing_target.distance;
-            mavlink_msg.size_x 	   = _landing_target.size_x;
-            mavlink_msg.size_y 	   = _landing_target.size_y;
-            mavlink_msg.target_num = _landing_target.target_num;
-            mavlink_msg.frame      = _landing_target.frame;
-            mavlink_msg_landing_target_send_struct(_mavlink->get_channel(), &mavlink_msg);
+            mavlink_msg.time_usec  = _target_pos.time_usec;
+            mavlink_msg.x    = _target_pos.x;
+            mavlink_msg.y    = _target_pos.y;
+            mavlink_msg.dist   = _target_pos.dist;
+            mavlink_msg.roll 	   = _target_pos.roll;
+            mavlink_msg.pitch 	   = _target_pos.pitch;
+            mavlink_msg.target_num = _target_pos.target_num;
+            mavlink_msg_target_position_image_send_struct(_mavlink->get_channel(), &mavlink_msg);
         }
     }
 };
@@ -4174,7 +4174,7 @@ const StreamListItem *streams_list[] = {
 	new StreamListItem(&MavlinkStreamMountOrientation::new_instance, &MavlinkStreamMountOrientation::get_name_static, &MavlinkStreamMountOrientation::get_id_static),
 	new StreamListItem(&MavlinkStreamHighLatency::new_instance, &MavlinkStreamHighLatency::get_name_static, &MavlinkStreamWind::get_id_static),
 	new StreamListItem(&MavlinkStreamGroundTruth::new_instance, &MavlinkStreamGroundTruth::get_name_static, &MavlinkStreamGroundTruth::get_id_static),
-	new StreamListItem(&MavlinkStreamLandingTarget::new_instance, &MavlinkStreamLandingTarget::get_name_static, &MavlinkStreamLandingTarget::get_id_static),
+	new StreamListItem(&MavlinkStreamTargetPositionImage::new_instance, &MavlinkStreamTargetPositionImage::get_name_static, &MavlinkStreamTargetPositionImage::get_id_static),
 	new StreamListItem(&MavlinkStreamTargetPositionNED::new_instance, &MavlinkStreamTargetPositionNED::get_name_static, &MavlinkStreamTargetPositionNED::get_id_static),
 	new StreamListItem(&MavlinkStreamTargetPositionNEDFiltered::new_instance, &MavlinkStreamTargetPositionNEDFiltered::get_name_static, &MavlinkStreamTargetPositionNEDFiltered::get_id_static),
 	nullptr

@@ -37,6 +37,8 @@ px4_add_module(
 	SRCS
 		dronecourse_main.cpp
 		PositionCtrl.cpp
+		TrajectoryCtrl.cpp
+		GimbalCtrl.cpp
 		TargetFollower.cpp
 		DronecourseHandler.cpp
 	DEPENDS

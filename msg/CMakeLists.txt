@@ -126,9 +126,10 @@ set(msg_file_names
 	vehicle_status_flags.msg
 	vtol_vehicle_status.msg
 	wind_estimate.msg
-	landing_target.msg
+	target_position_image.msg
 	target_position_ned.msg
 	dronecourse_local_setpoint.msg
+	gimbal_command.msg
 	)
 
 # Get absolute paths

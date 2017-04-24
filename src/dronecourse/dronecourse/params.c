@@ -100,9 +100,9 @@ PARAM_DEFINE_FLOAT(VAR_THR_VZ, 1.0f);
 
 
 /**
-* TargetTracker: Kalman system variance for X position
+* TargetTracker: Kalman system noise for X position
 *
-* confidence in predicted target position in X direction
+* standard deviation of predicted target position in X direction
 *
 * @min 0.0
 * @max 500.0
@@ -112,9 +112,9 @@ PARAM_DEFINE_FLOAT(VAR_THR_VZ, 1.0f);
 PARAM_DEFINE_FLOAT(KAL_SYS_NOISE_X, 0.01f);
 
 /**
-* TargetTracker: Kalman system variance for Y position
+* TargetTracker: Kalman system noise for Y position
 *
-* confidence in predicted target position in Y direction
+* standard deviation of predicted target position in Y direction
 *
 * @min 0.0
 * @max 500.0
@@ -125,9 +125,9 @@ PARAM_DEFINE_FLOAT(KAL_SYS_NOISE_Y, 0.01f);
 
 
 /**
-* TargetTracker: Kalman system variance for Z position
+* TargetTracker: Kalman system noise for Z position
 *
-* confidence in predicted target position in Z direction
+* standard deviation of predicted target position in Z direction
 *
 * @min 0.0
 * @max 500.0
@@ -137,9 +137,9 @@ PARAM_DEFINE_FLOAT(KAL_SYS_NOISE_Y, 0.01f);
 PARAM_DEFINE_FLOAT(KAL_SYS_NOISE_Z, 0.01f);
 
 /**
-* TargetTracker: Kalman system variance for X velocity
+* TargetTracker: Kalman system noise for X velocity
 *
-* confidence in predicted target velocity in X direction
+* standard deviation of predicted target velocity in X direction
 *
 * @min 0.0
 * @max 500.0
@@ -149,9 +149,9 @@ PARAM_DEFINE_FLOAT(KAL_SYS_NOISE_Z, 0.01f);
 PARAM_DEFINE_FLOAT(KAL_SYS_NOISE_VX, 0.4f);
 
 /**
-* TargetTracker: Kalman system variance for Y velocity
+* TargetTracker: Kalman system noise for Y velocity
 *
-* confidence in predicted target velocity in Y direction
+* standard deviation of predicted target velocity in Y direction
 *
 * @min 0.0
 * @max 500.0
@@ -161,7 +161,7 @@ PARAM_DEFINE_FLOAT(KAL_SYS_NOISE_VX, 0.4f);
 PARAM_DEFINE_FLOAT(KAL_SYS_NOISE_VY, 0.4f);
 
 /**
-* TargetTracker: Kalman system variance for Z velocity
+* TargetTracker: Kalman system noise for Z velocity
 *
 * confidence in predicted target velocity in Z direction
 *
@@ -171,3 +171,39 @@ PARAM_DEFINE_FLOAT(KAL_SYS_NOISE_VY, 0.4f);
 * @group Dronecourse
 */
 PARAM_DEFINE_FLOAT(KAL_SYS_NOISE_VZ, 0.4f);
+
+/**
+* TargetTracker: Kalman measurement noise for X position
+*
+* standard deviation of measured target position in X direction
+*
+* @min 0.0
+* @max 500.0
+* @decimal 2
+* @group Dronecourse
+*/
+PARAM_DEFINE_FLOAT(KAL_MEAS_NOISE_X, 0.4f);
+
+/**
+* TargetTracker: Kalman measurement noise for Y position
+*
+* standard deviation of measured target position in Y direction
+*
+* @min 0.0
+* @max 500.0
+* @decimal 2
+* @group Dronecourse
+*/
+PARAM_DEFINE_FLOAT(KAL_MEAS_NOISE_Y, 0.4f);
+
+/**
+* TargetTracker: Kalman measurement noise for Z position
+*
+* standard deviation of measured target position in Z direction
+*
+* @min 0.0
+* @max 500.0
+* @decimal 2
+* @group Dronecourse
+*/
+PARAM_DEFINE_FLOAT(KAL_MEAS_NOISE_Z, 0.4f);

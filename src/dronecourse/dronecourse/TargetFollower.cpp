@@ -8,13 +8,16 @@
 
 #include "TargetFollower.hpp"
 #include <drivers/drv_hrt.h>
+#include <px4_time.h>
 #include <uORB/topics/target_position_ned.h>
+#include <uORB/topics/gimbal_command.h>
 
 
 
 #include <iostream>
 
-TargetFollower::TargetFollower() :
+TargetFollower::TargetFollower(GimbalCtrl& gimbal) :
+  _gimbal(gimbal),
   _target_pos_sub(orb_subscribe(ORB_ID(target_position_ned_filtered))),
   _local_pos_sub(orb_subscribe(ORB_ID(vehicle_local_position))),
   _p_pos_gain(param_find("FOL_POS")),
@@ -36,8 +39,8 @@ TargetFollower::TargetFollower() :
   _has_target_vel_lock(false),
   _has_target_pos_lock_old(false),
   _has_target_vel_lock_old(false),
-  _vel_command(0.0f, 0.0f, 0.0f),
-  _yaw_command(0.0f)
+  _current_yaw(0.0f),
+  _vel_command(0.0f, 0.0f, 0.0f)
 {
 }
 
@@ -52,18 +55,38 @@ void TargetFollower::update()
 
   if(_has_target_pos_lock && _has_target_vel_lock)
   {
-      // get error
-      matrix::Vector3f pos_err = _target_pos - _current_pos;
+    _gimbal.setAutomatic();
+    // get position error
+    matrix::Vector3f pos_err = _target_pos - _current_pos;
+    matrix::Vector3f pos_err_vel = _pos_gain * pos_err;
 
-      _vel_command = _pos_gain * pos_err + _target_vel;
-      _vel_command(2) = 0.0f;
+    for(uint8_t i = 0; i < 3; i++)
+    {
+      if(pos_err_vel(i) > 1){
+        pos_err_vel(i) = 1;
+      } else if(pos_err_vel(i) < -1){
+        pos_err_vel(i) = -1;
+      }
+
+    }
+
+    _vel_command = _pos_gain * pos_err + _target_vel;
+    _vel_command(2) *= 0.4f;
 
   } else {
-    matrix::Vector3f goal_pos(0, 20, -70);
-    _pos_ctrl.set_position_command(goal_pos);
-    _pos_ctrl.set_yaw_command(0);
-    _pos_ctrl.update();
-    _vel_command = _pos_ctrl.get_velocity_command();
+    _gimbal.set_command(0, (float)(-M_PI/2.0) + 0.6f, _current_yaw + 0.2f);
+
+    if(hrt_absolute_time() - _last_lock_time < 1e6 ){
+    // wait where you are
+    _vel_command(0) = 0.0f;
+    _vel_command(1) = 0.0f;
+    _vel_command(2) = -0.1f;
+    } else {
+      matrix::Vector3f goal_pos(0, 30, -40);
+      _pos_ctrl.set_position_command(goal_pos);
+      _pos_ctrl.update();
+      _vel_command = _pos_ctrl.get_velocity_command();
+    }
   }
 }
 
@@ -90,7 +113,10 @@ void TargetFollower::update_subscriptions()
 
     _has_target_pos_lock = target_msg.var_x < _var_thr_x && target_msg.var_y < _var_thr_y && target_msg.var_z < _var_thr_z;
     _has_target_vel_lock = target_msg.var_vx < _var_thr_vx && target_msg.var_vy < _var_thr_vy && target_msg.var_vz < _var_thr_vz;
-
+    if(_has_target_vel_lock && _has_target_pos_lock)
+    {
+      _last_lock_time = hrt_absolute_time();
+    }
   }
 
     orb_check(_local_pos_sub, &updated);
@@ -104,6 +130,7 @@ void TargetFollower::update_subscriptions()
     _current_vel(0) = local_pos_msg.vx;
     _current_vel(1) = local_pos_msg.vy;
     _current_vel(2) = local_pos_msg.vz;
+    _current_yaw    = local_pos_msg.yaw;
   }
 
   if(_has_target_pos_lock && !_has_target_pos_lock_old)

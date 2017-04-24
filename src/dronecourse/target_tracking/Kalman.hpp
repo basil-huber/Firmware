@@ -38,12 +38,7 @@ public:
 		_w = w;
 		calcPhiQ();
 
-
-		// set r
-		for(int i=0; i<N; i++)
-		{
-			_r(i,i) = v(i);	
-		}
+		setMeasureNoise(v);
 
 		// set initial values for p and x
 		_p.setIdentity();
@@ -90,10 +85,23 @@ public:
 		return variances;
 	}
 
-	void setSystemNoise(const matrix::Vector<float,M>& w)
+	void setSystemNoise(const matrix::Vector<float,M>& std)
 	{
-		_w = w;
+		_w = std;
 		calcPhiQ();
+	}
+
+	void setMeasureNoise(const matrix::Vector<float,N>& std)
+	{
+		// set r
+		for(int i=0; i<N; i++)
+		{
+			_r(i,i) = std(i)*std(i);	
+		}
+	}
+
+	void setBla(const float a[N]){
+		_q(0,0) = a[3];
 	}
 
 private:
@@ -117,7 +125,7 @@ private:
 	{
 		matrix::Matrix<float,M,M> gwg;
 		for(int i=0; i<M; i++)
-			gwg(i,i) = _w(i);
+			gwg(i,i) = _w(i)*_w(i);
 		matrix::SquareMatrix<float, 2*M> a;
 		a.set(-_f, 0,0);
 		a.set(gwg,0,M);

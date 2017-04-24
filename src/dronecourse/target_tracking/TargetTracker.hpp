@@ -9,7 +9,7 @@
 #pragma once
 // #include <poll.h>
 #include <px4_posix.h>
-#include <uORB/topics/landing_target.h>
+#include <uORB/topics/target_position_image.h>
 
 #include <uORB/topics/vehicle_attitude.h>
 #include <uORB/Subscription.hpp>
@@ -40,8 +40,9 @@ private:
     
     uORB::Subscription<vehicle_attitude_s> _attitude_sub;
     uORB::Subscription<vehicle_local_position_s> _position_sub;
-	orb_advert_t 								_target_position_pub;
-	orb_advert_t 								_target_position_filtered_pub;
+	orb_advert_t   _target_position_pub;
+	orb_advert_t   _target_position_filtered_pub;
+
     // camera parameters
     const static uint16_t IMAGE_WIDTH2 = 640/2;	// half image width
     const static uint16_t IMAGE_HEIGHT2 = 480/2;	// half image height
@@ -53,20 +54,11 @@ private:
     int _target_id;
 
     // onboard parameter handles
-    param_t _p_kal_sys_noise_x;
-    param_t _p_kal_sys_noise_y;
-    param_t _p_kal_sys_noise_z;
-    param_t _p_kal_sys_noise_vx;
-    param_t _p_kal_sys_noise_vy;
-    param_t _p_kal_sys_noise_vz;
+    param_t _p_kal_sys_noise[6];
+    param_t _p_kal_meas_noise[6];
     // onboard parameter values
-    float _kal_sys_noise_x;
-    float _kal_sys_noise_y;
-    float _kal_sys_noise_z;
-    float _kal_sys_noise_vx;
-    float _kal_sys_noise_vy;
-    float _kal_sys_noise_vz;
-
+    float _kal_sys_noise[6];
+    float _kal_meas_noise[6];
 };
 
 

@@ -13,7 +13,8 @@
 
 #include <iostream>
 
-DronecourseHandler::DronecourseHandler()
+DronecourseHandler::DronecourseHandler() :
+  _follower(_gimbal)
 {
 }
 
@@ -24,19 +25,22 @@ DronecourseHandler::~DronecourseHandler()
 
 void DronecourseHandler::update(DcMode mode)
 {
+  _gimbal.update();
   switch (mode)
   {
     case DcMode::POS_CTRL:
       _pos_ctrl.update();
-      send_velocity_command(_pos_ctrl.get_velocity_command(), _pos_ctrl.get_yaw_command(), _pos_ctrl.get_goal_position());
+      send_velocity_command(_pos_ctrl.get_velocity_command(), _gimbal.get_yaw_command(), _pos_ctrl.get_goal_position());
       break;
 
     case DcMode::FOLLOW:
       _follower.update();
-      send_velocity_command(_follower.get_velocity_command(), _follower.get_yaw_command());
+      send_velocity_command(_follower.get_velocity_command(), _gimbal.get_yaw_command());
       break;
 
     case DcMode::MISSION:
+      _trajectory_ctrl.update();
+      send_velocity_command(_trajectory_ctrl.get_velocity_command(), _gimbal.get_yaw_command());
     case DcMode::IDLE:
       break;
   }
@@ -47,13 +51,6 @@ void DronecourseHandler::set_position_command(float x, float y, float z)
   matrix::Vector3f pos(x,y,z);
   _pos_ctrl.set_position_command(pos);
 }
-
-
-void DronecourseHandler::set_yaw_command(float yaw)
-{
-  _pos_ctrl.set_yaw_command(yaw);
-}
-
 
 void DronecourseHandler::send_velocity_command(const matrix::Vector3f& vel_command,float yaw_command)
 {
