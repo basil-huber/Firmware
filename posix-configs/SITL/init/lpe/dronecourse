@@ -56,35 +56,35 @@ param set MPC_XY_P 0.5
 # origin for drone course (Lausanne EPFL Esplanade)
 # param set LPE_LAT 46.51852236174565 
 # param set LPE_LON 6.566044801857777
-# param set FAKE_ORIGIN 1
 # origin for drone course (Zurich Irchelpark)
 param set LPE_LAT 47.397742
 param set LPE_LON 8.545594
-param set FAKE_ORIGIN 1
+param set LPE_FAKE_ORIGIN 1
 
 # set magnetic declination to 0
 param set ATT_MAG_DECL 0
 param set ATT_MAG_DECL_A 0
 
-# Kalman parameters
-param set 
 
 # following parameters
-param set FOL_POS 	0.1
+param set FOL_POS 	0.3
 param set VAR_THR_X 70
 param set VAR_THR_Y 70
 param set VAR_THR_Z 70
-param set VAR_THR_X 70
-param set VAR_THR_Y 70
-param set VAR_THR_Z 70
+param set VAR_THR_VX 3
+param set VAR_THR_VY 3
+param set VAR_THR_VZ 3
 
 # Kalman parameters
-KAL_SYS_NOISE_X 0
-KAL_SYS_NOISE_Y 0
-KAL_SYS_NOISE_Z 0
-KAL_SYS_NOISE_VX 2
-KAL_SYS_NOISE_VY 2
-KAL_SYS_NOISE_VZ 2
+param set KAL_SYS_NOISE_X 0
+param set KAL_SYS_NOISE_Y 0
+param set KAL_SYS_NOISE_Z 0
+param set KAL_SYS_NOISE_VX 0.5
+param set KAL_SYS_NOISE_VY 0.5
+param set KAL_SYS_NOISE_VZ 0.5
+param set KAL_MEAS_NOISE_X 2
+param set KAL_MEAS_NOISE_Y 2
+param set KAL_MEAS_NOISE_Z 2
 
 replay tryapplyparams
 simulator start -s
@@ -108,9 +108,9 @@ mc_att_control start
 mixer load /dev/pwm_output0 ROMFS/px4fmu_common/mixers/quad_w.main.mix
 mavlink start -u 14556 -m magic -r 2000000
 mavlink start -u 14557 -r 2000000 -m onboard -o 14540
-mavlink stream -r 80 -s LOCAL_POSITION_NED -u 14556
-mavlink stream -r 80 -s GLOBAL_POSITION_INT -u 14556
-mavlink stream -r 80 -s ATTITUDE -u 14556
+mavlink stream -r 20 -s LOCAL_POSITION_NED -u 14556
+mavlink stream -r 20 -s GLOBAL_POSITION_INT -u 14556
+mavlink stream -r 20 -s ATTITUDE -u 14556
 mavlink stream -r 10 -s OPTICAL_FLOW_RAD -u 14556
 mavlink stream -r 10 -s POSITION_TARGET_LOCAL_NED -u 14556
 mavlink stream -r 10 -s LANDING_TARGET -u 14556
@@ -126,6 +126,5 @@ target_tracking start
 dronecourse start
 dronecourse follow
 commander mode auto:follow
-dronecourse pos 0 20 -120 3.14159265359
-sleep 1
-# commander arm
+dronecourse gimbal auto
+commander arm

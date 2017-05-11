@@ -30,17 +30,17 @@ void DronecourseHandler::update(DcMode mode)
   {
     case DcMode::POS_CTRL:
       _pos_ctrl.update();
-      send_velocity_command(_pos_ctrl.get_velocity_command(), _gimbal.get_yaw_command(), _pos_ctrl.get_goal_position());
+      send_velocity_command(_pos_ctrl.get_velocity_command(), 0, _pos_ctrl.get_goal_position());
       break;
 
     case DcMode::FOLLOW:
       _follower.update();
-      send_velocity_command(_follower.get_velocity_command(), _gimbal.get_yaw_command());
+      send_velocity_command(_follower.get_velocity_command(), 0);
       break;
 
     case DcMode::MISSION:
       _trajectory_ctrl.update();
-      send_velocity_command(_trajectory_ctrl.get_velocity_command(), _gimbal.get_yaw_command());
+      send_velocity_command(_trajectory_ctrl.get_velocity_command(), 0);
     case DcMode::IDLE:
       break;
   }

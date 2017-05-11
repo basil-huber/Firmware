@@ -68,7 +68,6 @@ static float pos_z = 5;
 static bool new_gimbal_rot = false;
 static bool new_gimbal_auto = false;
 static float pitch = 0;
-static float roll = 0;
 static float yaw = 0;
 
 #define DT_US 50000
@@ -206,16 +205,15 @@ int dronecourse_main(int argc, char *argv[])
 			new_gimbal_rot = false;
 			return 0;
 		}
-		else if(argc >= 5)
+		else if(argc >= 4)
 		{
 			char* end;
-			roll = strtod(argv[2], &end);
-			pitch = strtod(argv[3], &end);
-			yaw = strtod(argv[4], &end);
+			pitch = strtod(argv[2], &end);
+			yaw = strtod(argv[3], &end);
 
 			new_gimbal_rot = true;
 			new_gimbal_auto = false;
-			PX4_INFO("Setting gimbal command to ( %f | %f )", (double)roll, (double)pitch);
+			PX4_INFO("Setting gimbal command to pitch: %f    yaw: %f )", (double)pitch, (double)yaw);
 			return 0;
 		} else
 		{
@@ -250,7 +248,7 @@ int dronecourse_thread_main(int argc, char *argv[])
 		}
 		if (new_gimbal_rot)
 		{
-			handler.gimbal().set_command(roll, pitch, yaw);
+			handler.gimbal().set_command(pitch, yaw);
 			new_gimbal_rot = false;
 		}else if(new_gimbal_auto){
 			handler.gimbal().setAutomatic();

@@ -56,8 +56,9 @@ void TargetFollower::update()
   if(_has_target_pos_lock && _has_target_vel_lock)
   {
     _gimbal.setAutomatic();
+
     // get position error
-    matrix::Vector3f pos_err = _target_pos - _current_pos;
+    matrix::Vector3f pos_err = _target_pos - _current_pos + matrix::Vector3f(0.0f,0.0f,-4.0f);
     matrix::Vector3f pos_err_vel = _pos_gain * pos_err;
 
     for(uint8_t i = 0; i < 3; i++)
@@ -74,13 +75,13 @@ void TargetFollower::update()
     _vel_command(2) *= 0.4f;
 
   } else {
-    _gimbal.set_command(0, (float)(-M_PI/2.0) + 0.6f, _current_yaw + 0.2f);
+    _gimbal.set_command((float)(-M_PI/2.0) + 0.6f, _current_yaw + 0.2f);
 
     if(hrt_absolute_time() - _last_lock_time < 1e6 ){
-    // wait where you are
-    _vel_command(0) = 0.0f;
-    _vel_command(1) = 0.0f;
-    _vel_command(2) = -0.1f;
+      // wait where you are
+      _vel_command(0) = 0.0f;
+      _vel_command(1) = 0.0f;
+      _vel_command(2) = -0.1f;
     } else {
       matrix::Vector3f goal_pos(0, 30, -40);
       _pos_ctrl.set_position_command(goal_pos);

@@ -3987,8 +3987,8 @@ protected:
             mavlink_msg.x    = _target_pos.x;
             mavlink_msg.y    = _target_pos.y;
             mavlink_msg.dist   = _target_pos.dist;
-            mavlink_msg.roll 	   = _target_pos.roll;
             mavlink_msg.pitch 	   = _target_pos.pitch;
+            mavlink_msg.yaw 	   = _target_pos.yaw;
             mavlink_msg.target_num = _target_pos.target_num;
             mavlink_msg_target_position_image_send_struct(_mavlink->get_channel(), &mavlink_msg);
         }

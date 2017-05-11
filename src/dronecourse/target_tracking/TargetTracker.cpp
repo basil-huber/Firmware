@@ -73,7 +73,7 @@ void TargetTracker::update()
     /* copy data to local buffers */
     struct target_position_image_s target_pos;
     orb_copy(ORB_ID(target_position_image), _polls[0].fd, &target_pos);
-    
+
     // compute target position in image frame
     matrix::Vector3f target_pos_if(target_pos.x - IMAGE_WIDTH2, target_pos.y - IMAGE_HEIGHT2, _focal_length); // target position in image frame
     float scale = target_pos.dist / target_pos_if.norm();
@@ -84,12 +84,13 @@ void TargetTracker::update()
     matrix::Vector3f target_pos_cf = image_rot.conjugate(target_pos_if);
 
     // convert to body frame
-    matrix::Quaternion<float> camera_rot(matrix::Euler<float>(target_pos.roll, target_pos.pitch, 0.0f));
+    matrix::Quaternion<float> camera_rot(matrix::Euler<float>(0.0f, target_pos.pitch, target_pos.yaw));
     matrix::Vector3f target_pos_bf = camera_rot.conjugate_inversed(target_pos_cf);
 
     // convert to local frame (NED)
     matrix::Quaternion<float> att_vehicle(_attitude_sub.get().q);
     matrix::Vector3f pos_vehicle(_position_sub.get().x, _position_sub.get().y, _position_sub.get().z);
+
     matrix::Vector3f target_pos_lf = att_vehicle.conjugate_inversed(target_pos_bf);
     target_pos_lf += pos_vehicle;
 

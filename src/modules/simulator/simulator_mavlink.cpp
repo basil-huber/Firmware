@@ -545,11 +545,11 @@ void *Simulator::sending_trampoline(void *)
 
 void Simulator::send()
 {
-	px4_pollfd_struct_t fds[1] = {};
+	px4_pollfd_struct_t fds[2] = {};
 	fds[0].fd = _actuator_outputs_sub[0];
 	fds[0].events = POLLIN;
-
-
+	fds[1].fd = _gimbal_command_sub;
+	fds[1].events = POLLIN;
 	// set the threads name
 #ifdef __PX4_DARWIN
 	pthread_setname_np("sim_send");
@@ -578,8 +578,9 @@ void Simulator::send()
 			// got new data to read, update all topics
 			poll_topics();
 			send_controls();
-			update_gimbal();
 		}
+
+		update_gimbal();
 	}
 }
 
@@ -1102,8 +1103,8 @@ int Simulator::publish_target_pos(mavlink_target_position_image_t *msg)
 	target.x          = msg->x;
 	target.y    	  = msg->y;
 	target.dist   	  = msg->dist;
-	target.roll 	  = msg->roll;
 	target.pitch      = msg->pitch;
+	target.yaw  	  = msg->yaw;
 	target.target_num = msg->target_num;
 
 	int target_multi;
@@ -1120,8 +1121,8 @@ void Simulator::update_gimbal()
 		gimbal_command_s msg;
 		orb_copy(ORB_ID(gimbal_command), _gimbal_command_sub, &msg);
 		mavlink_gimbal_command_t mav_msg;
-		mav_msg.roll = msg.roll;
 		mav_msg.pitch = msg.pitch;
+		mav_msg.yaw = msg.yaw;
 		send_mavlink_message(MAVLINK_MSG_ID_GIMBAL_COMMAND, &mav_msg, 200);
 	}
 }

@@ -31,15 +31,12 @@ public:
 
     void setAutomatic(){_mode = MODE::AUTOMATIC;};
 
-    void set_command(float roll, float pitch, float yaw);
+    void set_command(float pitch, float yaw);
 
     void update();
 
-    float get_yaw_command(){return _yaw;};
-
 private:
     MODE _mode;
-    float _yaw;
 
     // uORB
     int _target_pos_sub;
