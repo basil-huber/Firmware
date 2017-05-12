@@ -26,7 +26,9 @@ VelocityMode::VelocityMode(Navigator *navigator, const char *name) :
 }
 
 
-void VelocityMode::on_activation(){}
+void VelocityMode::on_activation(){
+  set_takeoff_item(&_mission_item, _navigator->get_global_position()->alt + _param_min_alt.get(), 0);
+}
 
 
 void VelocityMode::on_inactive(){}
@@ -38,7 +40,6 @@ void VelocityMode::on_active()
   switch(mode)
   {
     case Mode::TAKEOFF:
-      set_takeoff_item(&_mission_item, _navigator->get_global_position()->alt + _param_min_alt.get(), 0);
       if(is_mission_item_reached())
       {
         mode = Mode::VELOCITY;
@@ -86,6 +87,7 @@ void VelocityMode::set_velocity_command(dronecourse_local_setpoint_s& local_sp)
     setpoint_triplet->current.vz = local_sp.vz;
     setpoint_triplet->current.yaw_valid = true;
     setpoint_triplet->current.yaw = local_sp.yaw;
+
 
     // set position (even if not used, for mavlink)
     setpoint_triplet->current.position_valid = false;

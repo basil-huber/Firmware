@@ -86,6 +86,9 @@ param set KAL_MEAS_NOISE_X 2
 param set KAL_MEAS_NOISE_Y 2
 param set KAL_MEAS_NOISE_Z 2
 
+# flight parameters
+param set MPC_XY_CRUISE 10
+
 replay tryapplyparams
 simulator start -s
 rgbledsim start
@@ -124,7 +127,7 @@ replay trystart
 sleep 3
 target_tracking start
 dronecourse start
-dronecourse follow
+dronecourse mission
 commander mode auto:follow
 dronecourse gimbal auto
 commander arm

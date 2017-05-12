@@ -35,7 +35,8 @@
  * @file Expo.hpp
  *
  * So called exponential curve function implementation.
- * It's essentially a linear combination between a linear and a cubic function.
+ * It is essentially a linear combination between a linear and a cubic function.
+ * It's used in the range [-1,1]
  */
 
 #pragma once
@@ -46,11 +47,33 @@
 namespace math
 {
 
+// Type-safe signum function
+template<typename T> int sign(T val) {
+	return (T(0) < val) - (val < T(0));
+}
+
 template<typename _Tp>
 inline const _Tp expo(const _Tp &value, const _Tp &e)
 {
 	_Tp x = constrain(value ,(_Tp)-1, (_Tp)1);
 	return (1-e)*x + e*x*x*x;
+}
+
+template<typename _Tp>
+inline const _Tp deadzone(const _Tp &value, const _Tp &dz)
+{
+	_Tp x = constrain(value ,(_Tp)-1, (_Tp)1);
+	_Tp dzc = constrain(dz ,(_Tp)-1, (_Tp)1);
+	// Rescale the input such that we get a piecewise linear function that will be continuous with applied deadzone
+	_Tp out = (x-sign(x)*dzc)/(1-dzc);
+	// apply the deadzone (values zero around the middle)
+	return out * (fabsf(x) > dzc);
+}
+
+template<typename _Tp>
+inline const _Tp expo_deadzone(const _Tp &value, const _Tp &e, const _Tp &dz)
+{
+	return expo(deadzone(value, dz),e);
 }
 
 }

@@ -94,9 +94,6 @@ BlockParam<T>::BlockParam(Block *block, const char *name,
 }
 
 template <class T>
-T BlockParam<T>::get() { return _val; }
-
-template <class T>
 void BlockParam<T>::set(T val)
 {
 	_val = val;
@@ -114,6 +111,12 @@ template <class T>
 void BlockParam<T>::commit()
 {
 	if (_handle != PARAM_INVALID) { param_set(_handle, &_val); }
+}
+
+template <class T>
+void BlockParam<T>::commit_no_notification()
+{
+	if (_handle != PARAM_INVALID) { param_set_no_notification(_handle, &_val); }
 }
 
 template <class T>

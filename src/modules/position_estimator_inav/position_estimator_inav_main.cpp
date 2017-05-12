@@ -424,7 +424,9 @@ int position_estimator_inav_thread_main(int argc, char *argv[])
 			if (fds_init[0].revents & POLLIN) {
 				orb_copy(ORB_ID(sensor_combined), sensor_combined_sub, &sensor);
 
-				if (wait_baro && sensor.timestamp + sensor.baro_timestamp_relative != baro_timestamp) {
+				bool baro_updated = (sensor.baro_timestamp_relative != sensor.RELATIVE_TIMESTAMP_INVALID);
+
+				if (wait_baro && sensor.timestamp + sensor.baro_timestamp_relative != baro_timestamp && baro_updated) {
 					baro_timestamp = sensor.timestamp + sensor.baro_timestamp_relative;
 					baro_wait_for_sample_time = hrt_absolute_time();
 
@@ -1340,6 +1342,9 @@ int position_estimator_inav_thread_main(int argc, char *argv[])
 			local_pos.dist_bottom_valid = dist_bottom_valid;
 			local_pos.eph = eph;
 			local_pos.epv = epv;
+			// TODO provide calculated values for these
+			local_pos.evh = 0.0f;
+			local_pos.evv = 0.0f;
 
 			if (local_pos.dist_bottom_valid) {
 				local_pos.dist_bottom = dist_ground;
@@ -1370,6 +1375,10 @@ int position_estimator_inav_thread_main(int argc, char *argv[])
 
 				global_pos.eph = eph;
 				global_pos.epv = epv;
+
+				// TODO provide calculated values for these
+				global_pos.evh = 0.0f;
+				global_pos.evv = 0.0f;
 
 				if (terrain_estimator.is_valid()) {
 					global_pos.terrain_alt = global_pos.alt - terrain_estimator.get_distance_to_ground();

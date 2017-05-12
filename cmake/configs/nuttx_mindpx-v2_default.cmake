@@ -19,10 +19,7 @@ set(config_module_list
 	drivers/boards/mindpx-v2
 	drivers/rgbled
 	#drivers/rgbled_pwm
-	#drivers/mpu6000
-	#drivers/mpu6050
-	drivers/mpu6500
-	#drivers/mpu9250
+	drivers/mpu9250
 	drivers/lsm303d
 	drivers/l3gd20
 	drivers/hmc5883
@@ -64,6 +61,7 @@ set(config_module_list
 	systemcmds/perf
 	systemcmds/pwm
 	systemcmds/esc_calib
+	systemcmds/led_control
 	systemcmds/hardfault_log
 	systemcmds/reboot
 	systemcmds/topic_listener
@@ -93,6 +91,7 @@ set(config_module_list
 	# General system control
 	#
 	modules/commander
+	modules/events
 	modules/load_mon
 	modules/navigator
 	modules/mavlink
@@ -145,6 +144,7 @@ set(config_module_list
 	lib/geo_lookup
 	lib/conversion
 	lib/launchdetection
+	lib/led
 	lib/terrain_estimation
 	lib/runway_takeoff
 	lib/tailsitter_recovery

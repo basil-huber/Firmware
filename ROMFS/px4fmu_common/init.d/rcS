@@ -1,5 +1,8 @@
 #!nsh
-#
+# Un comment and use set +e to ignore and set -e to enable 'exit on error control'
+#set +e
+# Un comment the line below to help debug scripts by printing a trace of the script commands
+#set -x
 # PX4FMU startup script.
 #
 # NOTE: environment variable references:
@@ -38,7 +41,9 @@ mount -t procfs /proc
 #
 # Start CDC/ACM serial driver
 #
-sercon
+if sercon
+then
+fi
 
 #
 # Default to auto-start mode.
@@ -145,8 +150,8 @@ then
 	#
 	if param compare SYS_AUTOCONFIG 1
 	then
-		# Wipe out params except RC*
-		param reset_nostart RC*
+		# Wipe out params except RC* and total flight time
+		param reset_nostart RC* LND_FLIGHT_T_*
 		set AUTOCNF yes
 	else
 		set AUTOCNF no
@@ -191,6 +196,7 @@ then
 	set MAV_TYPE none
 	set FAILSAFE none
 	set USE_IO yes
+	set LOGGER_BUF 16
 
 	#
 	# Set USE_IO flag
@@ -228,6 +234,11 @@ then
 		then
 			set USE_IO no
 		fi
+
+		if ver hwcmp AEROCORE2
+		then
+			set USE_IO no
+		fi
 	else
 		set USE_IO no
 	fi
@@ -249,10 +260,24 @@ then
 	#
 	if param compare SYS_AUTOSTART 0
 	then
+		ekf2 start
 	else
 		sh /etc/init.d/rc.autostart
 	fi
 	unset MODE
+
+	#
+	# If mount (gimbal) control is enabled and output mode is AUX, set the aux
+	# mixer to mount (override the airframe-specific MIXER_AUX setting)
+	#
+	if param compare MNT_MODE_IN -1
+	then
+	else
+		if param compare MNT_MODE_OUT 0
+		then
+			set MIXER_AUX mount
+		fi
+	fi
 
 	#
 	# Wipe incompatible settings for boards not having two outputs
@@ -399,16 +424,18 @@ then
 		then
 			set FMU_MODE serial
 		fi
-		unset HIL
 	else
-		unset HIL
 		gps start
 	fi
 
 	set DATAMAN_OPT ""
 	if ver hwcmp AEROFC_V1
 	then
-		set DATAMAN_OPT -r
+		set DATAMAN_OPT -i
+	fi
+	if ver hwcmp AEROCORE2
+	then
+		set DATAMAN_OPT "-f /fs/mtd_dataman"
 	fi
 	# waypoint storage
 	# REBOOTWORK this needs to start in parallel
@@ -420,7 +447,13 @@ then
 	#
 	# Sensors System (start before Commander so Preflight checks are properly run)
 	#
-	sh /etc/init.d/rc.sensors
+	if [ $HIL == yes ]
+	then
+		sensors start -hil
+	else
+		sh /etc/init.d/rc.sensors
+	fi
+	unset HIL
 
 	# Needs to be this early for in-air-restarts
 	if [ $OUTPUT_MODE == hil ]
@@ -453,16 +486,24 @@ then
 	fi
 
 	# Sensors on the PWM interface bank
-	# clear pins 5 and 6
 	if param compare SENS_EN_LL40LS 1
 	then
+		# clear pins 5 and 6
 		set FMU_MODE pwm4
 		set AUX_MODE pwm4
 	fi
 	if param greater TRIG_MODE 0
 	then
-		set FMU_MODE pwm4
-		set AUX_MODE pwm4
+		# We ONLY support trigger on pins 5 and 6 when simultanously using AUX for actuator output
+		if param compare TRIG_PINS 56
+		then
+			# clear pins 5 and 6
+			set FMU_MODE pwm4
+			set AUX_MODE pwm4
+		else
+			set FMU_MODE none
+			set AUX_MODE none
+		fi
 		camera_trigger start
 	fi
 
@@ -699,6 +740,7 @@ then
 	then
 		if uavcan start
 		then
+			set LOGGER_BUF 7
 			uavcan start fw
 		else
 			tone_alarm ${TUNE_ERR}
@@ -717,6 +759,14 @@ then
 			if ll40ls start pwm
 			then
 			fi
+		fi
+	fi
+
+	# Lidar-Lite on I2C
+	if param compare SENS_EN_LL40LS 2
+	then
+		if ll40ls start i2c
+		then
 		fi
 	fi
 
@@ -812,6 +862,14 @@ then
 			fi
 		else
 			set LOGGER_ARGS ""
+			#
+			# Adjust FMUv5 logging settings
+			#
+			if ver hwcmp PX4FMU_V5
+			then
+				set LOGGER_BUF 64
+				param set SDLOG_MODE 3
+			fi
 			if param compare SDLOG_MODE 1
 			then
 				set LOGGER_ARGS "-e"
@@ -828,9 +886,10 @@ then
 			then
 				set LOGGER_ARGS "-m mavlink"
 			fi
-			if logger start -b 12 -t ${LOGGER_ARGS}
+			if logger start -b ${LOGGER_BUF} -t ${LOGGER_ARGS}
 			then
 			fi
+			unset LOGGER_BUF
 			unset LOGGER_ARGS
 		fi
 	fi
@@ -1067,11 +1126,18 @@ then
 		# CF2 shouldn't have an sd card
 	else
 
-		# Run no SD alarm
-		if [ $LOG_FILE == /dev/null ]
+		if ver hwcmp AEROCORE2
 		then
-			# Play SOS
-			tone_alarm error
+			# AEROCORE2 shouldn't have an sd card
+		else
+
+			# Run no SD alarm
+			if [ $LOG_FILE == /dev/null ]
+			then
+				# Play SOS
+				tone_alarm error
+			fi
+
 		fi
 
 	fi
@@ -1101,6 +1167,15 @@ then
 		send_event temperature_calibration ${TEMP_CALIB_ARGS}
 	fi
 	unset TEMP_CALIB_ARGS
+
+	# vmount to control mounts such as gimbals, disabled by default.
+	if param compare MNT_MODE_IN -1
+	then
+	else
+		if vmount start
+		then
+		fi
+	fi
 
 # End of autostart
 fi

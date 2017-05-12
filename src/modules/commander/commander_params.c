@@ -222,18 +222,6 @@ PARAM_DEFINE_FLOAT(COM_HOME_H_T, 5.0f);
 PARAM_DEFINE_FLOAT(COM_HOME_V_T, 10.0f);
 
 /**
- * Autosaving of params
- *
- * If not equal to zero the commander will automatically save parameters to persistent storage once changed.
- * Default is on, as the interoperability with currently deployed GCS solutions depends on parameters
- * being sticky. Developers can default it to off.
- *
- * @group Commander
- * @boolean
- */
-PARAM_DEFINE_INT32(COM_AUTOS_PAR, 1);
-
-/**
  * RC control input mode
  *
  * The default value of 0 requires a valid RC transmitter setup.
@@ -287,10 +275,7 @@ PARAM_DEFINE_INT32(COM_DISARM_LAND, 0);
  * The default allows to arm the vehicle without GPS signal.
  *
  * @group Commander
- * @min 0
- * @max 1
- * @value 0 Don't allow arming without GPS
- * @value 1 Allow arming without GPS
+ * @boolean
  */
 PARAM_DEFINE_INT32(COM_ARM_WO_GPS, 1);
 
@@ -315,8 +300,9 @@ PARAM_DEFINE_INT32(COM_ARM_SWISBTN, 0);
  *
  * @group Commander
  * @value 0 Warning
- * @value 1 Return to Land
+ * @value 1 Return to land
  * @value 2 Land at current position
+ * @value 3 Return to land at critically low level, land at current position if reaching dangerously low levels
  * @decimal 0
  * @increment 1
  */
@@ -359,7 +345,7 @@ PARAM_DEFINE_INT32(COM_OBL_ACT, 0);
  * @value 2 Manual
  * @value 3 Return to Land
  * @value 4 Land at current position
- *
+ * @value 5 Loiter
  * @group Mission
  */
 PARAM_DEFINE_INT32(COM_OBL_RC_ACT, 0);
@@ -597,3 +583,34 @@ PARAM_DEFINE_FLOAT(COM_ARM_IMU_ACC, 0.7f);
  * @increment 0.01
  */
 PARAM_DEFINE_FLOAT(COM_ARM_IMU_GYR, 0.15f);
+
+/**
+ * Enable RC stick override of auto modes
+ *
+ * @boolean
+ * @group Commander
+ */
+PARAM_DEFINE_INT32(COM_RC_OVERRIDE, 0);
+
+/**
+ * Require valid mission to arm
+ *
+ * The default allows to arm the vehicle without a valid mission.
+ *
+ * @group Commander
+ * @boolean
+ */
+PARAM_DEFINE_INT32(COM_ARM_MIS_REQ, 0);
+
+/**
+ * Position control navigation loss response.
+ *
+ * This sets the flight mode that will be used if navigation accuracy is no longer adequte for position control.
+ * Navigation accuracy checks can be disabled using the CBRK_VELPOSERR parameter, but doing so will remove protection for all flight modes.
+ *
+ * @value 0 Assume use of remote control after fallback. Switch to ALTCTL if a height estimate is available, else switch to MANUAL.
+ * @value 1 Assume no use of remote control after fallback. Switch to DESCEND if a height estimate is available, else switch to TERMINATION.
+ *
+ * @group Mission
+ */
+PARAM_DEFINE_INT32(COM_POSCTL_NAVL, 0);
