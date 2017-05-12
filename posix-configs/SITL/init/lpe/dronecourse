@@ -62,8 +62,8 @@ param set LPE_LON 8.545594
 param set LPE_FAKE_ORIGIN 1
 
 # set magnetic declination to 0
-param set ATT_MAG_DECL 0
-param set ATT_MAG_DECL_A 0
+#param set ATT_MAG_DECL 0
+#param set ATT_MAG_DECL_A 0
 
 
 # following parameters
