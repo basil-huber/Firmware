@@ -128,8 +128,12 @@ set(config_module_list
 	platforms/posix/px4_layer
 	platforms/posix/work_queue
 
+	#
+	# LIS modules
+	#
 	dronecourse/dronecourse
 	dronecourse/target_tracking
+	dronecourse/offboard_controller
 
 	#
 	# OBC challenge

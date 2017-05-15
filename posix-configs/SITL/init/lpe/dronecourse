@@ -35,18 +35,15 @@ param set MC_ROLL_P 5.5
 param set MC_ROLLRATE_I 0.1
 param set MC_PITCHRATE_I 0.1
 param set MPC_HOLD_MAX_Z 2.0
-param set MPC_HOLD_XY_DZ 0.1
 param set MPC_Z_VEL_P 0.8
 param set MPC_Z_VEL_I 0.15
 param set MPC_XY_VEL_P 0.15
 param set MPC_XY_VEL_I 0.2
 
 # changes for LPE indoor flight
-param set LPE_GPS_ON 1
 param set MPC_ALT_MODE 1
 param set LPE_T_MAX_GRADE 0
 param set MPC_XY_VEL_MAX 12
-param set MPC_Z_VEL_MAX 5
 param set MPC_XY_P 0.5
 
 #-----------------------------
@@ -124,10 +121,13 @@ sdlog2 start -r 100 -e -t -a
 mavlink boot_complete
 replay trystart
 
-sleep 3
-target_tracking start
+offboard_controller start
 dronecourse start
-dronecourse mission
-commander mode auto:follow
+sleep 5
+commander takeoff
+target_tracking start
 dronecourse gimbal auto
-commander arm
+sleep 1
+commander mode offboard
+dronecourse follow
+
