@@ -53,7 +53,6 @@
 #include "rcloss.h"
 #include "rtl.h"
 #include "takeoff.h"
-#include "velocity_mode.h"
 
 #include <controllib/block/BlockParam.hpp>
 #include <controllib/blocks.hpp>
@@ -287,7 +286,7 @@ private:
 	DataLinkLoss	_dataLinkLoss;			/**< class that handles the OBC datalink loss mode */
 	EngineFailure	_engineFailure;			/**< class that handles the engine failure mode (FW only!) */
 	GpsFailure	_gpsFailure;			/**< class that handles the OBC gpsfailure loss mode */
-	VelocityMode 	_velocity_mode;
+	FollowTarget	_follow_target;
 
 	NavigatorMode *_navigation_mode_array[NAVIGATOR_MODE_ARRAY_SIZE];	/**< array of navigation modes */
 

@@ -39,8 +39,7 @@ public:
 
 private:
 
-	void send_velocity_command(const matrix::Vector3f& vel_command, float yaw_command);
-	void send_velocity_command(const matrix::Vector3f& vel_command, float yaw_command, const matrix::Vector3f& pos_command);
+	void send_velocity_command(const matrix::Vector3f& vel_command, float yaw_command = NAN);
 
     orb_advert_t _local_sp_pub;
 

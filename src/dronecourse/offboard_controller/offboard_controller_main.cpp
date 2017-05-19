@@ -54,7 +54,7 @@
 
 #include <uORB/topics/vehicle_control_mode.h>
 #include <uORB/topics/offboard_control_mode.h>
-#include <uORB/topics/dronecourse_local_setpoint.h>
+#include <uORB/topics/dronecourse_velocity_setpoint.h>
 #include <uORB/topics/position_setpoint_triplet.h>
 #include <uORB/topics/position_setpoint.h>
 
@@ -150,10 +150,10 @@ int offboard_controller_tread(int argc, char *argv[])
 	// Subscriptions
 	// ----------------
 	// control mode
-	int _control_mode_sub = orb_subscribe(ORB_ID(vehicle_control_mode));
-	int _local_setpoint_sub = orb_subscribe(ORB_ID(dronecourse_local_setpoint));
-	struct vehicle_control_mode_s _control_mode;
-    struct dronecourse_local_setpoint_s local_sp;
+	int control_mode_sub = orb_subscribe(ORB_ID(vehicle_control_mode));
+	int velocity_setpoint_sub = orb_subscribe(ORB_ID(dronecourse_velocity_setpoint));
+	struct vehicle_control_mode_s control_mode;
+    struct dronecourse_velocity_setpoint_s vel_sp;
 
 
 	// ----------------
@@ -195,19 +195,19 @@ int offboard_controller_tread(int argc, char *argv[])
 		// Check if current mode is offboard mode
 		// --------------------------------------
 		bool updated;
-		orb_check(_control_mode_sub, &updated);
+		orb_check(control_mode_sub, &updated);
 
 		if (updated) {
-			orb_copy(ORB_ID(vehicle_control_mode), _control_mode_sub, &_control_mode);
+			orb_copy(ORB_ID(vehicle_control_mode), control_mode_sub, &control_mode);
 		}
 
 		bool setpoint_received;
-		orb_check(_local_setpoint_sub, &setpoint_received);
+		orb_check(velocity_setpoint_sub, &setpoint_received);
 
 
-		if (_control_mode.flag_control_offboard_enabled && setpoint_received) {
+		if (control_mode.flag_control_offboard_enabled && setpoint_received) {
 			
-			orb_copy(ORB_ID(dronecourse_local_setpoint), _local_setpoint_sub, &local_sp);
+			orb_copy(ORB_ID(dronecourse_velocity_setpoint), velocity_setpoint_sub, &vel_sp);
 
 			// -----------------
 			// Position setpoint
@@ -225,11 +225,11 @@ int offboard_controller_tread(int argc, char *argv[])
 		    // set velocity and yaw
 		    pos_sp_triplet.current.velocity_valid = true;
 		    pos_sp_triplet.current.velocity_frame = position_setpoint_s::VELOCITY_FRAME_LOCAL_NED;
-		    pos_sp_triplet.current.vx = local_sp.vx;
-		    pos_sp_triplet.current.vy = local_sp.vy;
-		    pos_sp_triplet.current.vz = local_sp.vz;
-		    pos_sp_triplet.current.yaw_valid = true;
-		    pos_sp_triplet.current.yaw = local_sp.yaw;
+		    pos_sp_triplet.current.vx = vel_sp.vx;
+		    pos_sp_triplet.current.vy = vel_sp.vy;
+		    pos_sp_triplet.current.vz = vel_sp.vz;
+		    pos_sp_triplet.current.yaw_valid = vel_sp.yaw_valid;
+		    pos_sp_triplet.current.yaw = vel_sp.yaw;
 
 		    // set position (even if not used, for mavlink)
 		    pos_sp_triplet.current.position_valid = false;

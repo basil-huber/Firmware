@@ -7,7 +7,7 @@
  */
 
 #include "DronecourseHandler.hpp"
-#include <uORB/topics/dronecourse_local_setpoint.h>
+#include <uORB/topics/dronecourse_velocity_setpoint.h>
 #include <drivers/drv_hrt.h>
 
 
@@ -30,7 +30,7 @@ void DronecourseHandler::update(DcMode mode)
   {
     case DcMode::POS_CTRL:
       _pos_ctrl.update();
-      send_velocity_command(_pos_ctrl.get_velocity_command(), 0, _pos_ctrl.get_goal_position());
+      send_velocity_command(_pos_ctrl.get_velocity_command(), 0);
       break;
 
     case DcMode::FOLLOW:
@@ -52,26 +52,17 @@ void DronecourseHandler::set_position_command(float x, float y, float z)
   _pos_ctrl.set_position_command(pos);
 }
 
+
 void DronecourseHandler::send_velocity_command(const matrix::Vector3f& vel_command,float yaw_command)
 {
-  matrix::Vector3f pos_command(NAN, NAN, NAN);
-  send_velocity_command(vel_command, yaw_command, pos_command);
-}
-
-
-void DronecourseHandler::send_velocity_command(const matrix::Vector3f& vel_command,float yaw_command, const matrix::Vector3f& pos_command)
-{
-  dronecourse_local_setpoint_s local_msg;
+  dronecourse_velocity_setpoint_s local_msg;
   local_msg.vx = vel_command(0);
   local_msg.vy = vel_command(1);
   local_msg.vz = vel_command(2);
+  local_msg.yaw_valid = (yaw_command == NAN);
   local_msg.yaw = yaw_command;
-  // position is unused (only for mavlink)
-  local_msg.x = pos_command(0);
-  local_msg.y = pos_command(1);
-  local_msg.z = pos_command(2);
   local_msg.timestamp = hrt_absolute_time();
 
   int instance;
-  orb_publish_auto(ORB_ID(dronecourse_local_setpoint), &_local_sp_pub, &local_msg, &instance, ORB_PRIO_DEFAULT);
+  orb_publish_auto(ORB_ID(dronecourse_velocity_setpoint), &_local_sp_pub, &local_msg, &instance, ORB_PRIO_DEFAULT);
 }

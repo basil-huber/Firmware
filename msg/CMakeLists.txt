@@ -127,7 +127,7 @@ set(msg_file_names
 	wind_estimate.msg
 	target_position_image.msg
 	target_position_ned.msg
-	dronecourse_local_setpoint.msg
+	dronecourse_velocity_setpoint.msg
 	gimbal_command.msg
 	)
 
