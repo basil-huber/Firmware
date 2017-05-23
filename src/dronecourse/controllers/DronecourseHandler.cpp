@@ -16,7 +16,9 @@
 DronecourseHandler::DronecourseHandler() :
   _mode(DcMode::IDLE),
   _auto_mode(false),
-  _follower(_gimbal)
+  _pos_ctrl(_gimbal),
+  _follower(_gimbal),
+  _trajectory_ctrl(_gimbal)
 {
 }
 

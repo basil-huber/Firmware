@@ -18,7 +18,7 @@
 #include "GimbalCtrl.hpp"
 
 
-class TargetFollower
+class TargetFollower : public PositionCtrl
 {
 
 
@@ -29,17 +29,11 @@ public:
 
 	void update();
 
-    const matrix::Vector3f& get_velocity_command() const {return _vel_command;};
-
 private:
     void update_subscriptions();
     
     void update_parameters();
     
-
-    PositionCtrl _pos_ctrl;
-    GimbalCtrl&  _gimbal;
-
     // uORB subscriptions and advertisements
     int _target_pos_sub;
     int _local_pos_sub;
@@ -76,7 +70,6 @@ private:
     float            _current_yaw;
     matrix::Vector3f _target_pos;
     matrix::Vector3f _target_vel;
-    matrix::Vector3f _vel_command;
 };
 
 

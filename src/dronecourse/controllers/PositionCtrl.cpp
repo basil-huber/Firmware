@@ -13,9 +13,9 @@
 
 #include <iostream>
 
-PositionCtrl::PositionCtrl() :
+PositionCtrl::PositionCtrl(GimbalCtrl& gimbal) :
+  BaseCtrl(gimbal),
   _goal_pos(0.0f,0.0f,0.0f),
-  _vel_command(0.0f,0.0f,0.0f),
   _current_pos(0.0f,0.0f,0.0f),
   _local_pos_sub(orb_subscribe(ORB_ID(vehicle_local_position)))
 {
@@ -27,9 +27,16 @@ void PositionCtrl::update()
 
   // get error
   matrix::Vector3f err = _goal_pos - _current_pos;
-  _vel_command = 0.3f * err;
+  matrix::Vector3f vel_command = 0.3f * err;
+
+  send_velocity_command(vel_command);
 }
 
+
+matrix::Vector3f PositionCtrl::get_target_vector() const
+{
+  return (_goal_pos - _current_pos);
+}
 
 
 

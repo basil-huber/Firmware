@@ -8,11 +8,12 @@
  * @author Basil Huber LIS <basil.huber@gmail.com>
  */
 
-#include "BaseController.hpp"
+#include "BaseCtrl.hpp"
 #include <uORB/topics/dronecourse_velocity_setpoint.h>
 #include <drivers/drv_hrt.h>
 
-void BaseController::send_velocity_command(const matrix::Vector3f& vel_command,float yaw_command)
+
+void BaseCtrl::send_velocity_command(const matrix::Vector3f& vel_command,float yaw_command)
 {
   dronecourse_velocity_setpoint_s local_msg;
   local_msg.vx = vel_command(0);

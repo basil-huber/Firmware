@@ -12,15 +12,23 @@
 #pragma once
 #include <px4_posix.h>
 #include <matrix/math.hpp>
+#include "GimbalCtrl.hpp"
 
-class BaseController
+class BaseCtrl
 {
 
 public:
+
+	BaseCtrl(GimbalCtrl& gimbal) : _gimbal(gimbal){};
+
+	virtual ~BaseCtrl(){};
+
 	virtual void update() = 0;
 
-private:
+protected:
 	void send_velocity_command(const matrix::Vector3f& vel_command, float yaw_command = NAN);
 
     orb_advert_t _local_sp_pub;
+
+    GimbalCtrl& _gimbal;			// gimbal controller to set gimbal orientation
 };

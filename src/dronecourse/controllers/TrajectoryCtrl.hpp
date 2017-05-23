@@ -14,16 +14,13 @@
 
 #define WAYPOINT_COUNT 4
 
-class TrajectoryCtrl{
+class TrajectoryCtrl : public PositionCtrl{
 public:
-	TrajectoryCtrl();
+	TrajectoryCtrl(GimbalCtrl& gimbal);
 
 	void update();
 
-	const matrix::Vector3f& get_velocity_command() const {return _pos_ctrl.get_velocity_command();};
-
 private:
 	int _waypoint_index;
-	PositionCtrl _pos_ctrl;
 	matrix::Vector3f _waypoints[WAYPOINT_COUNT];
 };

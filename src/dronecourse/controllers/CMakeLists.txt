@@ -36,7 +36,7 @@ px4_add_module(
 	STACK_MAIN 2000
 	SRCS
 		dronecourse_main.cpp
-		BaseController.cpp
+		BaseCtrl.cpp
 		GimbalCtrl.cpp
 		PositionCtrl.cpp
 		TrajectoryCtrl.cpp

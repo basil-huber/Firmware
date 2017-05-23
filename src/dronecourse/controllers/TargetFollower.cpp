@@ -17,7 +17,7 @@
 #include <iostream>
 
 TargetFollower::TargetFollower(GimbalCtrl& gimbal) :
-  _gimbal(gimbal),
+  PositionCtrl(gimbal),
   _target_pos_sub(orb_subscribe(ORB_ID(target_position_ned_filtered))),
   _local_pos_sub(orb_subscribe(ORB_ID(vehicle_local_position))),
   _p_pos_gain(param_find("FOL_POS")),
@@ -39,8 +39,7 @@ TargetFollower::TargetFollower(GimbalCtrl& gimbal) :
   _has_target_vel_lock(false),
   _has_target_pos_lock_old(false),
   _has_target_vel_lock_old(false),
-  _current_yaw(0.0f),
-  _vel_command(0.0f, 0.0f, 0.0f)
+  _current_yaw(0.0f)
 {
 }
 
@@ -71,22 +70,21 @@ void TargetFollower::update()
 
     }
 
-    _vel_command = _pos_gain * pos_err + _target_vel;
-    _vel_command(2) *= 0.4f;
+    matrix::Vector3f vel_command = _pos_gain * pos_err + _target_vel;
+    vel_command(2) *= 0.4f;
+    send_velocity_command(vel_command);
 
   } else {
     _gimbal.set_command((float)(-M_PI/2.0) + 0.6f, _current_yaw + 0.2f);
 
     if(hrt_absolute_time() - _last_lock_time < 1e6 ){
-      // wait where you are
-      _vel_command(0) = 0.0f;
-      _vel_command(1) = 0.0f;
-      _vel_command(2) = -0.1f;
+      // wait where you are, rise slowly
+      matrix::Vector3f vel_command(0.0f, 0.0f, 0.1f);
+      send_velocity_command(vel_command);
     } else {
-      matrix::Vector3f goal_pos(0, 50, -40);
-      _pos_ctrl.set_position_command(goal_pos);
-      _pos_ctrl.update();
-      _vel_command = _pos_ctrl.get_velocity_command();
+      matrix::Vector3f pos_command(0, 50, -40);
+      set_position_command(pos_command);
+      PositionCtrl::update();
     }
   }
 }
