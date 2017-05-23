@@ -61,6 +61,7 @@ static int deamon_task;             /**< Handle of deamon task / thread */
 
 
 static DronecourseHandler::DcMode dc_mode = DronecourseHandler::DcMode::IDLE;
+static bool mode_change = false;
 static bool dc_mode_auto = false;
 
 static bool new_pos = false;
@@ -186,18 +187,21 @@ int dronecourse_main(int argc, char *argv[])
 		new_pos = true;
 		dc_mode = DronecourseHandler::DcMode::POS_CTRL;
 		dc_mode_auto = false;
+		mode_change = true;
 		PX4_INFO("Setting position command to ( %f | %f | %f )", (double)pos_x, (double)pos_y, (double)pos_z);
 		return 0;
 	} else if (!strcmp(argv[1], "follow"))
 	{
 		dc_mode = DronecourseHandler::DcMode::FOLLOW;
 		dc_mode_auto = false;
+		mode_change = true;
 		PX4_INFO("Switching to follow mode");
 		return 0;
 	} else if (!strcmp(argv[1], "auto"))
 	{
 		dc_mode_auto = true;
 		PX4_INFO("Switching to auto_mode");
+		return 0;
 	}else if (!strcmp(argv[1], "gimbal"))
 	{
 		if(argc < 3)
@@ -258,11 +262,19 @@ int dronecourse_thread_main(int argc, char *argv[])
 			handler.gimbal().setAutomatic();
 			new_gimbal_auto  = false;
 		}
-		handler.set_mode(dc_mode);
+
+		if(mode_change)
+		{
+			handler.set_mode(dc_mode);
+			mode_change = false;
+		}
+
 		if(dc_mode_auto)
 		{
 			handler.set_mode_auto();
+			dc_mode_auto = false;
 		}
+		
 		handler.update();
 		usleep(DT_US);
 	}

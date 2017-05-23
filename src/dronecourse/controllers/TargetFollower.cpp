@@ -90,6 +90,34 @@ void TargetFollower::update()
 }
 
 
+bool TargetFollower::is_goal_reached() const
+{
+  // if we don't have velocity or position lock we didn't reach the goal
+  if(!_has_target_pos_lock || !_has_target_vel_lock)
+  {
+    return false;
+  }
+
+  PX4_INFO("vel_error: %.2f   pos_err  %.2f")
+
+  // check if velocity is close enough
+  float vel_error = (_target_vel - _current_vel).norm();
+  if(vel_error > 0.5f)
+  {
+    return false;
+  }
+
+  // check if velocity is close enough
+  float pos_error = (_target_pos - _current_pos).norm();
+  if(pos_error > 0.5f)
+  {
+    return false;
+  }
+
+  return true;
+}
+
+
 void TargetFollower::update_subscriptions()
 {
   // check if we received a target position

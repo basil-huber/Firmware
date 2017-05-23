@@ -45,7 +45,6 @@ void PositionCtrl::update()
 
 bool PositionCtrl::is_goal_reached()
 {
-  PX4_INFO("is goal reached: %d   dist: %.2f    rad %.2f", (_target_vector.norm() < _pos_accept_rad), (double)_target_vector.norm(), (double)_pos_accept_rad);
   return (_target_vector.norm() < _pos_accept_rad);
 }
 

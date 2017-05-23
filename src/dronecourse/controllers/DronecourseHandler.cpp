@@ -30,10 +30,22 @@ void DronecourseHandler::update()
     case DcMode::POS_CTRL:
       _pos_ctrl.update();
 
+      // if we are in auto_mode and we reached the goal, continue with next mode
+      if(_auto_mode && _pos_ctrl.is_goal_reached())
+      {
+        _mode = DcMode::FOLLOW;
+        PX4_INFO("Switching to FOLLOW (automatically)");
+      }
       break;
 
     case DcMode::FOLLOW:
       _follower.update();
+      // if we are in auto_mode and we reached the goal, continue with next mode
+      if(_auto_mode && _follower.is_goal_reached())
+      {
+        _mode = DcMode::FOLLOW;
+        PX4_INFO("Switching to FOLLOW (automatically)");
+      }
       break;
 
     case DcMode::MISSION:

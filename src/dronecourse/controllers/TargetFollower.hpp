@@ -29,6 +29,14 @@ public:
 
 	void update();
 
+        /**
+     * Check if goal is reached
+     * true if target_pos and current_pos and _target_vel and current_vel are close enough
+     *
+     * @return  True if distance to goal smaller than POS_ACCEPT_RAD
+     */
+    virtual bool is_goal_reached() const;
+
 private:
     void update_subscriptions();
     
