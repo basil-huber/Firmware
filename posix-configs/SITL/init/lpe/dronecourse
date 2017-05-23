@@ -129,5 +129,6 @@ target_tracking start
 dronecourse gimbal auto
 sleep 1
 commander mode offboard
-dronecourse follow
+#dronecourse follow
+dronecourse pos 0 100 -10
 

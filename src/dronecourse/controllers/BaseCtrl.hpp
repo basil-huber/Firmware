@@ -25,10 +25,12 @@ public:
 
 	virtual void update() = 0;
 
+	virtual bool is_goal_reached() = 0;
+
 protected:
 	void send_velocity_command(const matrix::Vector3f& vel_command, float yaw_command = NAN);
 
-    orb_advert_t _local_sp_pub;
+    orb_advert_t _vel_setpoint_pub;	// publication handle for dronecourse_velocity_setpoint
 
     GimbalCtrl& _gimbal;			// gimbal controller to set gimbal orientation
 };

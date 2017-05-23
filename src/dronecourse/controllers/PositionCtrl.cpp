@@ -17,27 +17,37 @@ PositionCtrl::PositionCtrl(GimbalCtrl& gimbal) :
   BaseCtrl(gimbal),
   _goal_pos(0.0f,0.0f,0.0f),
   _current_pos(0.0f,0.0f,0.0f),
-  _local_pos_sub(orb_subscribe(ORB_ID(vehicle_local_position)))
+  // uORB subscriptions
+  _local_pos_sub(orb_subscribe(ORB_ID(vehicle_local_position))),
+  // parameter handles
+  _p_pos_accept_rad(param_find("POS_ACCEPT_RAD")),
+  // parameter values
+  _pos_accept_rad(0.0f)
 {
 }
 
 void PositionCtrl::update()
 {
   update_subscriptions();
+  update_parameters();
 
-  // get error
-  matrix::Vector3f err = _goal_pos - _current_pos;
-  matrix::Vector3f vel_command = 0.3f * err;
+  // calculate target vector (vector from drone to goal position)
+  _target_vector = _goal_pos - _current_pos;
 
+
+  // calculate velocity command
+  matrix::Vector3f vel_command = 0.3f * _target_vector;
+
+  // send velocity command
   send_velocity_command(vel_command);
 }
 
 
-matrix::Vector3f PositionCtrl::get_target_vector() const
+bool PositionCtrl::is_goal_reached()
 {
-  return (_goal_pos - _current_pos);
+  PX4_INFO("is goal reached: %d   dist: %.2f    rad %.2f", (_target_vector.norm() < _pos_accept_rad), (double)_target_vector.norm(), (double)_pos_accept_rad);
+  return (_target_vector.norm() < _pos_accept_rad);
 }
-
 
 
 void PositionCtrl::update_subscriptions()
@@ -51,5 +61,16 @@ void PositionCtrl::update_subscriptions()
     _current_pos(0) = local_pos_msg.x;
     _current_pos(1) = local_pos_msg.y;
     _current_pos(2) = local_pos_msg.z;
+  }
+}
+
+
+void PositionCtrl::update_parameters()
+{
+  if(_p_pos_accept_rad != PARAM_INVALID)
+  {
+    param_get(_p_pos_accept_rad, &_pos_accept_rad);
+  } else {
+    PX4_WARN("param POS_ACCEPT_RAD not found");
   }
 }

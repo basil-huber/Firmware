@@ -22,11 +22,6 @@ DronecourseHandler::DronecourseHandler() :
 {
 }
 
-DronecourseHandler::~DronecourseHandler()
-{
-  orb_unadvertise(_local_sp_pub);
-}
-
 void DronecourseHandler::update()
 {
   _gimbal.update();
@@ -34,6 +29,7 @@ void DronecourseHandler::update()
   {
     case DcMode::POS_CTRL:
       _pos_ctrl.update();
+
       break;
 
     case DcMode::FOLLOW:

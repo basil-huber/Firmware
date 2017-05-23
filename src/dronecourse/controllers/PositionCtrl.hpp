@@ -37,6 +37,16 @@ public:
      */    
 	void update();
 
+
+    /**
+     * Check if goal is reached
+     * i.e. if we are close enough to waypoint
+     * (acceptance radius define with parameter POS_ACCEPT_RAD)
+     *
+     * @return  True if distance to goal smaller than POS_ACCEPT_RAD
+     */
+    virtual bool is_goal_reached();
+
     /**
      * Sets goal position of this controller
      *
@@ -61,12 +71,13 @@ public:
     const matrix::Vector3f& get_current_position() const {return _current_pos;};
 
     /**
-     * Calculates goal position (set by set_position_command) with respect to the drone position
+     * Returns goal position (set by set_position_command) with respect to the drone position
      * (vector from the drone to the goal position in local frame)
+     * Updated by update
      *
      * @return  goal position in drone centered local frame
      */
-    matrix::Vector3f get_target_vector() const;
+    const matrix::Vector3f& get_target_vector() const {return _target_vector;};
 
 
 protected:
@@ -77,11 +88,25 @@ protected:
      */
 	void update_subscriptions();
 
+
+    /**
+     * Updates onboard parameters:
+     * i.e. update POS_ACCEPT_RAD
+     */
+    void update_parameters();
+
 private:
 
     matrix::Vector3f _goal_pos;         //< Goal position in local frame
-    matrix::Vector3f _current_pos;      //< current position in local frame (updated by _update_subscriptions)
-
+    matrix::Vector3f _current_pos;      //< Current position in local frame (updated by _update_subscriptions)
+    matrix::Vector3f _target_vector;    //< Vector from drone to goal position
+    
     // subscriptions
     int _local_pos_sub;
+
+    // onboard parameter handles
+    param_t _p_pos_accept_rad;          // handle for acceptance radius for goal position
+
+    // onboard parameter values
+    float   _pos_accept_rad;            //< acceptance radius for goal position
 };

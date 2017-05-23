@@ -9,6 +9,19 @@
 
 
 /**
+* Position controller acceptance radius
+*
+* Radius around waypoint within which a waypoint counts as reached
+*
+* @min 0.0
+* @max 10.0
+* @decimal 2
+* @group Dronecourse
+*/
+PARAM_DEFINE_FLOAT(POS_ACCEPT_RAD, 1.0f);
+
+
+/**
 * TargetFollower position weight
 *
 * Selects weight of position error

@@ -15,14 +15,20 @@
 
 void BaseCtrl::send_velocity_command(const matrix::Vector3f& vel_command,float yaw_command)
 {
-  dronecourse_velocity_setpoint_s local_msg;
-  local_msg.vx = vel_command(0);
-  local_msg.vy = vel_command(1);
-  local_msg.vz = vel_command(2);
-  local_msg.yaw_valid = (yaw_command == NAN);
-  local_msg.yaw = yaw_command;
-  local_msg.timestamp = hrt_absolute_time();
 
-  int instance;
-  orb_publish_auto(ORB_ID(dronecourse_velocity_setpoint), &_local_sp_pub, &local_msg, &instance, ORB_PRIO_DEFAULT);
+
+  dronecourse_velocity_setpoint_s vel_setpoint;
+  vel_setpoint.vx = vel_command(0);
+  vel_setpoint.vy = vel_command(1);
+  vel_setpoint.vz = vel_command(2);
+  vel_setpoint.yaw_valid = (yaw_command == NAN);
+  vel_setpoint.yaw = yaw_command;
+  vel_setpoint.timestamp = hrt_absolute_time();
+
+  if (_vel_setpoint_pub == nullptr) {
+    _vel_setpoint_pub = orb_advertise(ORB_ID(dronecourse_velocity_setpoint), &vel_setpoint);
+  } else
+  {
+	orb_publish(ORB_ID(dronecourse_velocity_setpoint), _vel_setpoint_pub, &vel_setpoint);
+  }
 }
