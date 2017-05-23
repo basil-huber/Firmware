@@ -31,14 +31,15 @@
 #
 ############################################################################
 px4_add_module(
-	MODULE dronecourse__dronecourse
+	MODULE dronecourse__controllers
 	MAIN dronecourse
 	STACK_MAIN 2000
 	SRCS
 		dronecourse_main.cpp
+		BaseController.cpp
+		GimbalCtrl.cpp
 		PositionCtrl.cpp
 		TrajectoryCtrl.cpp
-		GimbalCtrl.cpp
 		TargetFollower.cpp
 		DronecourseHandler.cpp
 	DEPENDS

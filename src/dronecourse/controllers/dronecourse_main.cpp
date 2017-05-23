@@ -254,7 +254,8 @@ int dronecourse_thread_main(int argc, char *argv[])
 			handler.gimbal().setAutomatic();
 			new_gimbal_auto  = false;
 		}
-		handler.update(dc_mode);
+		handler.set_mode(dc_mode);
+		handler.update();
 		usleep(DT_US);
 	}
 

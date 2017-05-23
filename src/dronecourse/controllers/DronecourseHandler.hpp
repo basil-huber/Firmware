@@ -29,7 +29,11 @@ public:
 
     ~DronecourseHandler();
 
-	void update(DcMode mode);
+	void update();
+
+	void set_mode(DcMode mode){_mode = mode; _auto_mode = false;};
+
+	void set_mode_auto(){_mode = DcMode::IDLE; _auto_mode = true;};
 
     void set_position_command(float x, float y, float z);
 
@@ -41,10 +45,14 @@ private:
 
 	void send_velocity_command(const matrix::Vector3f& vel_command, float yaw_command = NAN);
 
+	DcMode _mode;
+	bool   _auto_mode;
+
     orb_advert_t _local_sp_pub;
 
     GimbalCtrl _gimbal;
     PositionCtrl _pos_ctrl;
     TargetFollower _follower;
     TrajectoryCtrl _trajectory_ctrl;
+
 };

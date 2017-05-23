@@ -131,7 +131,7 @@ set(config_module_list
 	#
 	# LIS modules
 	#
-	dronecourse/dronecourse
+	dronecourse/controllers
 	dronecourse/target_tracking
 	dronecourse/offboard_controller
 
