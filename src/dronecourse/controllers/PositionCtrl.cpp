@@ -17,13 +17,12 @@ PositionCtrl::PositionCtrl(GimbalCtrl& gimbal) :
   BaseCtrl(gimbal),
   _goal_pos(0.0f,0.0f,0.0f),
   _current_pos(0.0f,0.0f,0.0f),
-  // uORB subscriptions
-  _local_pos_sub(orb_subscribe(ORB_ID(vehicle_local_position))),
   // parameter handles
   _p_pos_accept_rad(param_find("POS_ACCEPT_RAD")),
   // parameter values
   _pos_accept_rad(0.0f)
 {
+    // uORB subscriptions TODO fill subscriptions
 }
 
 void PositionCtrl::update()
@@ -32,11 +31,12 @@ void PositionCtrl::update()
   update_parameters();
 
   // calculate target vector (vector from drone to goal position)
-  _target_vector = _goal_pos - _current_pos;
+  // TODO: calculate target vector
+  _target_vector = _goal_pos; // change this line
 
 
   // calculate velocity command
-  matrix::Vector3f vel_command = 0.3f * _target_vector;
+  matrix::Vector3f vel_command = matrix::Vector3f(0.0f,0.0f,0.0f); // change this line
 
   // send velocity command
   send_velocity_command(vel_command);
@@ -51,16 +51,7 @@ bool PositionCtrl::is_goal_reached()
 
 void PositionCtrl::update_subscriptions()
 {
-  bool updated;
-  orb_check(_local_pos_sub, &updated);
-  if(updated)
-  {
-    vehicle_local_position_s local_pos_msg;
-    orb_copy(ORB_ID(vehicle_local_position), _local_pos_sub, &local_pos_msg);
-    _current_pos(0) = local_pos_msg.x;
-    _current_pos(1) = local_pos_msg.y;
-    _current_pos(2) = local_pos_msg.z;
-  }
+  // TODO: update _current_pos with contents of vehicle_local_position message
 }
 
 
