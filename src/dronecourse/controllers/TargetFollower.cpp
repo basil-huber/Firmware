@@ -98,17 +98,17 @@ bool TargetFollower::is_goal_reached() const
     return false;
   }
 
-  PX4_INFO("vel_error: %.2f   pos_err  %.2f")
 
-  // check if velocity is close enough
+  // check if velocity and position is close enough
   float vel_error = (_target_vel - _current_vel).norm();
+  float pos_error = (_target_pos - _current_pos).norm();
+  // PX4_INFO("vel_error: %.2f   pos_err  %.2f", (double)vel_error,(double)pos_error);
+
   if(vel_error > 0.5f)
   {
     return false;
   }
 
-  // check if velocity is close enough
-  float pos_error = (_target_pos - _current_pos).norm();
   if(pos_error > 0.5f)
   {
     return false;
