@@ -16,10 +16,7 @@
 PositionCtrl::PositionCtrl(GimbalCtrl& gimbal) :
   BaseCtrl(gimbal),
   _goal_pos(0.0f,0.0f,0.0f),
-  _current_pos(0.0f,0.0f,0.0f),
-
-  // parameter values
-  _pos_accept_rad(0.0f)
+  _current_pos(0.0f,0.0f,0.0f)
 {
 
   // uORB subscriptions
