@@ -9,6 +9,19 @@
 
 
 /**
+* Position controller gain
+*
+* Gain of the proportional position controller
+*
+* @min 0.0
+* @max 20.0
+* @decimal 2
+* @group Dronecourse
+*/
+PARAM_DEFINE_FLOAT(POS_GAIN, 0.3f);
+
+
+/**
 * Position controller acceptance radius
 *
 * Radius around waypoint within which a waypoint counts as reached

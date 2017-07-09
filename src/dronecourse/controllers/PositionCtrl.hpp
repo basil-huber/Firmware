@@ -105,8 +105,10 @@ private:
     int _local_pos_sub;
 
     // onboard parameter handles
-    param_t _p_pos_accept_rad;          // handle for acceptance radius for goal position
+    param_t _p_pos_gain;                //< handle for position controller gain
+    param_t _p_pos_accept_rad;          //< handle for acceptance radius for goal position
 
     // onboard parameter values
     float   _pos_accept_rad;            //< acceptance radius for goal position
+    float   _pos_gain;                  //< position controller gain
 };
