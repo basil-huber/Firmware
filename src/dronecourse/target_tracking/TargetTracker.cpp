@@ -35,8 +35,7 @@ TargetTracker::TargetTracker(float dt) :
     _kal_meas_noise {0.0f}
 {
 	// subscribe to target_position_image messages
-	_polls[0].fd = orb_subscribe(ORB_ID(target_position_image));
-	_polls[0].events = POLLIN;
+  _target_position_image_sub = orb_subscribe(ORB_ID(target_position_image));
 
   // set up kalman filter
   const uint8_t m = 6;  // size of state vector
@@ -64,7 +63,7 @@ void TargetTracker::update()
   struct target_position_ned_s pos_msg;
   int instance;
   bool new_measure;
-  orb_check(_polls[0].fd, &new_measure);
+  orb_check(_target_position_image_sub, &new_measure);
   if(new_measure)
   {
     // update vehicle attitude and position
@@ -73,7 +72,7 @@ void TargetTracker::update()
 
     /* copy data to local buffers */
     struct target_position_image_s target_pos;
-    orb_copy(ORB_ID(target_position_image), _polls[0].fd, &target_pos);
+    orb_copy(ORB_ID(target_position_image),_target_position_image_sub, &target_pos);
 
     // compute target position in image frame
     matrix::Vector3f target_pos_if(target_pos.x - IMAGE_WIDTH2, target_pos.y - IMAGE_HEIGHT2, _focal_length); // target position in image frame
