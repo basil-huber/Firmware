@@ -65,20 +65,28 @@ void TargetTracker::update()
   
   _kf.predict();
 
+
   struct target_position_ned_s pos_msg;
   int instance;
-  bool new_measure;
+
+  bool new_measure = false;
+  // ------------------------------------------------------------
+  // TODO check if we have a new _target_position_image message
+  // and set new_measure accordingly
+  // ------------------------------------------------------------
   orb_check(_target_position_image_sub, &new_measure);
   if(new_measure)
   {
-    /* copy data to local buffers */
+    // --------------------------------------------------------------------
+    // TODO create local variable 'matrix::Vector3f target_pos_if' and set it
+    // to intrinsic image coordinates
+    // --------------------------------------------------------------------
     struct target_position_image_s target_pos;
     orb_copy(ORB_ID(target_position_image),_target_position_image_sub, &target_pos);
-
-    // compute target position in image frame
     matrix::Vector3f target_pos_if(target_pos.x - IMAGE_WIDTH2, target_pos.y - IMAGE_HEIGHT2, _focal_length); // target position in image frame
     float scale = target_pos.dist / target_pos_if.norm();
     target_pos_if *= scale;
+
 
     // convert to camera frame (camera's body frame)
     matrix::Quaternion<float> image_rot(matrix::Euler<float>(0.0f, -M_PI/2.0, -M_PI/2.0));
