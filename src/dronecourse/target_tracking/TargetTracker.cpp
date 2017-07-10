@@ -32,7 +32,10 @@ TargetTracker::TargetTracker(float dt) :
     _kal_sys_noise {0.0f},
     _kal_meas_noise {0.0f}
 {
-	// subscribe to target_position_image messages
+  // --------------------------------------------------------------------------
+	// TODO subscribe to uORB topics:
+  //  target_position_image messages, vehicle_attitude, vehicle_local_position
+  // --------------------------------------------------------------------------
   _attitude_sub = orb_subscribe(ORB_ID(vehicle_attitude));
   _position_sub = orb_subscribe(ORB_ID(vehicle_local_position));
   _target_position_image_sub = orb_subscribe(ORB_ID(target_position_image));
@@ -106,6 +109,10 @@ void TargetTracker::update()
 
 void TargetTracker::update_subscriptions()
 {
+  //--------------------------------------------------------------------------------------
+  // TODO update subscriptions for vehicle_attitude as well as for vehicle_local_position
+  //   and update the member variables _att_vehicle and _pos_vehicle
+  // -------------------------------------------------------------------------------------
   bool updated;
   orb_check(_attitude_sub, &updated);
   if(updated)

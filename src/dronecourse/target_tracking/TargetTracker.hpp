@@ -37,7 +37,10 @@ private:
 	void pack_target_position(struct target_position_ned_s& pos_msg, const matrix::Vector3f& pos);
     void pack_target_position(struct target_position_ned_s& pos_msg, const matrix::Vector<float,6>& pos_vel, const matrix::Vector<float,6>& variance);
 
-    // uORB subscriptions
+    // -------------------------------------------------------------------
+    // TODO add uORB subscriptions for
+    // vehicle_attitude, vehicle_local_position and target_position_image
+    // -------------------------------------------------------------------
     int _attitude_sub;
     int _position_sub;
     int _target_position_image_sub;
