@@ -100,10 +100,6 @@ public:
 		}
 	}
 
-	void setBla(const float a[N]){
-		_q(0,0) = a[3];
-	}
-
 private:
 	matrix::SquareMatrix<float,M>   _q;			//< Covariance of system (model) noise [constant]
 	matrix::SquareMatrix<float,N>   _r;			//< Covariance of measurement    noise [constant]

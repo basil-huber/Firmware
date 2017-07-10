@@ -37,7 +37,6 @@ px4_add_module(
 	SRCS
 		target_tracking_main.cpp
 		TargetTracker.cpp
-		Kalman.cpp
 	DEPENDS
 		platforms__common
 	)

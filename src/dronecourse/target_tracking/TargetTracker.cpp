@@ -42,6 +42,7 @@ TargetTracker::TargetTracker(float dt) :
   const uint8_t m = 6;  // size of state vector
   const uint8_t n = 3;  // size of measurement vector
   matrix::SquareMatrix<float, m> f;
+  f.setZero();
   f(0,3) = 1.0f;
   f(1,4) = 1.0f;
   f(2,5) = 1.0f;
