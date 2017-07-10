@@ -33,15 +33,23 @@ public:
 
 private:
     void update_parameters();
+    void update_subscriptions();
 	void pack_target_position(struct target_position_ned_s& pos_msg, const matrix::Vector3f& pos);
     void pack_target_position(struct target_position_ned_s& pos_msg, const matrix::Vector<float,6>& pos_vel, const matrix::Vector<float,6>& variance);
 
     // uORB subscriptions
+    int _attitude_sub;
+    int _position_sub;
     int _target_position_image_sub;
-    uORB::Subscription<vehicle_attitude_s> _attitude_sub;
-    uORB::Subscription<vehicle_local_position_s> _position_sub;
-	orb_advert_t   _target_position_pub;
+    
+	
+    // uORB publications
+    orb_advert_t   _target_position_pub;
 	orb_advert_t   _target_position_filtered_pub;
+
+    // vehicle attitude and position (from uORB)
+    matrix::Quaternion<float> _att_vehicle;
+    matrix::Vector3f          _pos_vehicle;
 
     // camera parameters
     const static uint16_t IMAGE_WIDTH2 = 640/2;	// half image width

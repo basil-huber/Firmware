@@ -16,8 +16,6 @@
 #include <iostream>
 
 TargetTracker::TargetTracker(float dt) :
-    _attitude_sub(ORB_ID(vehicle_attitude), 10, 0),
-    _position_sub(ORB_ID(vehicle_local_position), 10, 0),
     _target_position_pub(nullptr),
     _target_position_filtered_pub(nullptr),
     _focal_length(IMAGE_WIDTH2 / tan(HFOV_DEFAULT_/2.0f)),
@@ -35,6 +33,8 @@ TargetTracker::TargetTracker(float dt) :
     _kal_meas_noise {0.0f}
 {
 	// subscribe to target_position_image messages
+  _attitude_sub = orb_subscribe(ORB_ID(vehicle_attitude));
+  _position_sub = orb_subscribe(ORB_ID(vehicle_local_position));
   _target_position_image_sub = orb_subscribe(ORB_ID(target_position_image));
 
   // set up kalman filter
@@ -58,6 +58,8 @@ TargetTracker::TargetTracker(float dt) :
 void TargetTracker::update()
 {
   update_parameters();
+  update_subscriptions();
+  
   _kf.predict();
 
   struct target_position_ned_s pos_msg;
@@ -66,10 +68,6 @@ void TargetTracker::update()
   orb_check(_target_position_image_sub, &new_measure);
   if(new_measure)
   {
-    // update vehicle attitude and position
-    _attitude_sub.update();
-    _position_sub.update();
-
     /* copy data to local buffers */
     struct target_position_image_s target_pos;
     orb_copy(ORB_ID(target_position_image),_target_position_image_sub, &target_pos);
@@ -88,11 +86,8 @@ void TargetTracker::update()
     matrix::Vector3f target_pos_bf = camera_rot.conjugate_inversed(target_pos_cf);
 
     // convert to local frame (NED)
-    matrix::Quaternion<float> att_vehicle(_attitude_sub.get().q);
-    matrix::Vector3f pos_vehicle(_position_sub.get().x, _position_sub.get().y, _position_sub.get().z);
-
-    matrix::Vector3f target_pos_lf = att_vehicle.conjugate_inversed(target_pos_bf);
-    target_pos_lf += pos_vehicle;
+    matrix::Vector3f target_pos_lf = _att_vehicle.conjugate_inversed(target_pos_bf);
+    target_pos_lf += _pos_vehicle;
 
 
     pack_target_position(pos_msg, target_pos_lf);
@@ -107,6 +102,29 @@ void TargetTracker::update()
   orb_publish_auto(ORB_ID(target_position_ned_filtered), &_target_position_filtered_pub, &pos_msg, &instance, ORB_PRIO_HIGH);
 }
 
+
+
+void TargetTracker::update_subscriptions()
+{
+  bool updated;
+  orb_check(_attitude_sub, &updated);
+  if(updated)
+  {
+    vehicle_attitude_s attitude_msg;
+    orb_copy(ORB_ID(vehicle_attitude), _attitude_sub, &attitude_msg);
+    _att_vehicle = matrix::Quaternion<float>(attitude_msg.q);
+  }
+
+  orb_check(_position_sub, &updated);
+  if(updated)
+  {
+    vehicle_local_position_s pos_msg;
+    orb_copy(ORB_ID(vehicle_local_position), _position_sub, &pos_msg);
+    _pos_vehicle(0) = pos_msg.x;
+    _pos_vehicle(1) = pos_msg.y;
+    _pos_vehicle(2) = pos_msg.z;
+  }
+}
 
 void TargetTracker::update_parameters()
 {
