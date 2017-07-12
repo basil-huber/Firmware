@@ -9,7 +9,6 @@
 #pragma once
 // #include <poll.h>
 #include <px4_posix.h>
-#include <uORB/topics/target_position_ned.h>
 #include <uORB/Subscription.hpp>
 
 # include "Kalman.hpp"
@@ -25,7 +24,7 @@ public:
 
 private:
     void update_parameters();
-    void pack_target_position(struct target_position_ned_s& pos_msg, const matrix::Vector<float,6>& pos_vel, const matrix::Vector<float,6>& variance);
+    void publish_filtered_target_position(const matrix::Vector<float,6>& pos_vel, const matrix::Vector<float,6>& variance);
 
     // -------------------------------------------------------------------
     // TODO add uORB subscriptions for

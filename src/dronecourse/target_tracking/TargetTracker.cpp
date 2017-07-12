@@ -10,10 +10,6 @@
 #include <uORB/topics/target_position_ned.h>
 #include <float.h>
 
-
-
-#include <iostream>
-
 TargetTracker::TargetTracker(float dt) :
     _target_position_filtered_pub(nullptr),
     _p_kal_sys_noise {param_find("KAL_SYS_NOISE_X"),
@@ -58,10 +54,6 @@ void TargetTracker::update()
   
   _kf.predict();
 
-
-  struct target_position_ned_s pos_msg;
-  int instance;
-
   bool new_measure = false;
   // ------------------------------------------------------------
   // TODO check if we have a new target_position_ned message
@@ -81,10 +73,11 @@ void TargetTracker::update()
     _kf.correct(target_pos_lf);
   }
 
-  matrix::Vector<float,6> x_est = _kf.getStateEstimate();
-  matrix::Vector<float,6> x_var = _kf.getStateVariances();
-  pack_target_position(pos_msg, x_est, x_var);
-  orb_publish_auto(ORB_ID(target_position_ned_filtered), &_target_position_filtered_pub, &pos_msg, &instance, ORB_PRIO_HIGH);
+  // -------------------------------------------------------------------------
+  // TODO call publish_filtered_target_position(...) to publish
+  //      filtered the filtered target position
+  // -------------------------------------------------------------------------
+  publish_filtered_target_position(_kf.getStateEstimate(),  _kf.getStateVariances());
 }
 
 
@@ -129,20 +122,32 @@ void TargetTracker::update_parameters()
 }
 
 
-void TargetTracker::pack_target_position(struct target_position_ned_s& pos_msg, const matrix::Vector<float,6>& pos_vel, const matrix::Vector<float,6>& variance)
+void TargetTracker::publish_filtered_target_position(const matrix::Vector<float,6>& pos_vel, const matrix::Vector<float,6>& variance)
 {
-  pos_msg.x       = pos_vel(0);
-  pos_msg.y       = pos_vel(1);
-  pos_msg.z       = pos_vel(2);
-  pos_msg.vx      = pos_vel(3);
-  pos_msg.vy      = pos_vel(4);
-  pos_msg.vz      = pos_vel(5);
-  pos_msg.var_x   = variance(0);
-  pos_msg.var_y   = variance(1);
-  pos_msg.var_z   = variance(2);
-  pos_msg.var_vx  = variance(3);
-  pos_msg.var_vy  = variance(4);
-  pos_msg.var_vz  = variance(5);
+  // -------------------------------------------------------------------------------------------
+  // TODO create local variable of type struct target_position_ned_filtered_s
+  //      set all fields to 0 and then fill fields
+  // -------------------------------------------------------------------------------------------
+  struct target_position_ned_s target_pos_filtered;
+  memset(&target_pos_filtered, 0, sizeof(target_pos_filtered));     // set all fields to 0
 
-  pos_msg.target_id = 0;
+  target_pos_filtered.x       = pos_vel(0);
+  target_pos_filtered.y       = pos_vel(1);
+  target_pos_filtered.z       = pos_vel(2);
+  target_pos_filtered.vx      = pos_vel(3);
+  target_pos_filtered.vy      = pos_vel(4);
+  target_pos_filtered.vz      = pos_vel(5);
+  target_pos_filtered.var_x   = variance(0);
+  target_pos_filtered.var_y   = variance(1);
+  target_pos_filtered.var_z   = variance(2);
+  target_pos_filtered.var_vx  = variance(3);
+  target_pos_filtered.var_vy  = variance(4);
+  target_pos_filtered.var_vz  = variance(5);
+  target_pos_filtered.target_id = 0;
+
+  // -------------------------------------------------------------------------------------------
+  // TODO publish your target_position_ned_s message
+  // -------------------------------------------------------------------------------------------
+  int instance;
+  orb_publish_auto(ORB_ID(target_position_ned_filtered), &_target_position_filtered_pub, &target_pos_filtered, &instance, ORB_PRIO_HIGH);
 }

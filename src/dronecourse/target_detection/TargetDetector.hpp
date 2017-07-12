@@ -8,8 +8,6 @@
 
 #pragma once
 #include <px4_posix.h>
-#include <uORB/topics/target_position_image.h>
-#include <uORB/topics/vehicle_attitude.h>
 #include <uORB/Subscription.hpp>
 #include <matrix/math.hpp>
 
@@ -27,7 +25,6 @@ public:
 
 private:
     void update_subscriptions();
-	void pack_target_position(struct target_position_ned_s& pos_msg, const matrix::Vector3f& pos, int target_id);
 
     // -------------------------------------------------------------------
     // TODO add uORB subscriptions for

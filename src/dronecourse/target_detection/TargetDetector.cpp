@@ -8,11 +8,8 @@
 
 #include "TargetDetector.hpp"
 #include <uORB/topics/target_position_ned.h>
-#include <float.h>
-
-
-
-#include <iostream>
+#include <uORB/topics/target_position_image.h>
+#include <uORB/topics/vehicle_attitude.h>
 
 TargetDetector::TargetDetector() :
     _target_position_pub(nullptr),
@@ -30,9 +27,6 @@ TargetDetector::TargetDetector() :
 void TargetDetector::update()
 {
   update_subscriptions();
-  
-  struct target_position_ned_s pos_msg;
-  int instance;
 
   bool new_measure = false;
   // ------------------------------------------------------------
@@ -76,8 +70,22 @@ void TargetDetector::update()
     target_pos_lf += _pos_vehicle;
 
 
-    pack_target_position(pos_msg, target_pos_lf, target_pos.target_num);
-    orb_publish_auto(ORB_ID(target_position_ned), &_target_position_pub, &pos_msg, &instance, ORB_PRIO_HIGH);
+    // -------------------------------------------------------------------------------------------
+    // TODO create local variable of type struct target_position_ned_s
+    //      set all fields to 0 and then fill fields x,y and z with target position in local frame
+    // -------------------------------------------------------------------------------------------
+    struct target_position_ned_s target_pos_ned;
+    memset(&target_pos_ned, 0, sizeof(target_pos_ned));     // set all fields to 0
+    target_pos_ned.x = target_pos_lf(0);
+    target_pos_ned.y = target_pos_lf(1);
+    target_pos_ned.z = target_pos_lf(2);
+
+
+    // -------------------------------------------------------------------------------------------
+    // TODO publish your target_position_ned_s message
+    // -------------------------------------------------------------------------------------------
+    int instance;
+    orb_publish_auto(ORB_ID(target_position_ned), &_target_position_pub, &target_pos_ned, &instance, ORB_PRIO_HIGH);
   }
 }
 
@@ -107,21 +115,4 @@ void TargetDetector::update_subscriptions()
     _pos_vehicle(1) = pos_msg.y;
     _pos_vehicle(2) = pos_msg.z;
   }
-}
-
-void TargetDetector::pack_target_position(struct target_position_ned_s& pos_msg, const matrix::Vector3f& pos, int target_id)
-{
-  pos_msg.x       = pos(0);
-  pos_msg.y       = pos(1);
-  pos_msg.z       = pos(2);
-  pos_msg.vx      = 0;
-  pos_msg.vy      = 0;
-  pos_msg.vz      = 0;
-  pos_msg.var_x   = 0;
-  pos_msg.var_x   = 0;
-  pos_msg.var_x   = 0;
-  pos_msg.var_vx  = 0;
-  pos_msg.var_vy  = 0;
-  pos_msg.var_vz  = 0;
-  pos_msg.target_id = target_id;
 }
