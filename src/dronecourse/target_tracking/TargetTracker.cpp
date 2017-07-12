@@ -78,25 +78,35 @@ void TargetTracker::update()
   if(new_measure)
   {
     // --------------------------------------------------------------------
-    // TODO create local variable 'matrix::Vector3f target_pos_if' and set it
-    // to intrinsic image coordinates
+    // TODO copy message content to a local variable
     // --------------------------------------------------------------------
     struct target_position_image_s target_pos;
     orb_copy(ORB_ID(target_position_image),_target_position_image_sub, &target_pos);
+
+    // --------------------------------------------------------------------
+    // TODO find the target location in camera coordinates and store it
+    //      as local variable of type matrix::Vector3f
+    // --------------------------------------------------------------------
     matrix::Vector3f target_pos_if(target_pos.x - IMAGE_WIDTH2, target_pos.y - IMAGE_HEIGHT2, _focal_length); // target position in image frame
     float scale = target_pos.dist / target_pos_if.norm();
     target_pos_if *= scale;
 
 
-    // convert to camera frame (camera's body frame)
+    // --------------------------------------------------------------------
+    // TODO convert to NED camera frame using quaternions from euler angles
+    // --------------------------------------------------------------------
     matrix::Quaternion<float> image_rot(matrix::Euler<float>(0.0f, -M_PI/2.0, -M_PI/2.0));
     matrix::Vector3f target_pos_cf = image_rot.conjugate(target_pos_if);
 
-    // convert to body frame
+    // --------------------------------------------------------------------
+    // TODO convert to the drone's body frame using the gimbal angles
+    // --------------------------------------------------------------------
     matrix::Quaternion<float> camera_rot(matrix::Euler<float>(0.0f, target_pos.pitch, target_pos.yaw));
     matrix::Vector3f target_pos_bf = camera_rot.conjugate_inversed(target_pos_cf);
 
-    // convert to local frame (NED)
+    // --------------------------------------------------------------------
+    // TODO convert to NED camera frame using quaternions from euler angles
+    // --------------------------------------------------------------------
     matrix::Vector3f target_pos_lf = _att_vehicle.conjugate_inversed(target_pos_bf);
     target_pos_lf += _pos_vehicle;
 
