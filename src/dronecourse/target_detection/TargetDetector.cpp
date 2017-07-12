@@ -12,8 +12,10 @@
 #include <uORB/topics/vehicle_attitude.h>
 
 TargetDetector::TargetDetector() :
-    _target_position_pub(nullptr),
-    _focal_length(IMAGE_WIDTH2 / tan(HFOV_DEFAULT_/2.0f))
+  // --------------------------------------------------------------------------
+  // TODO calculate focal length and store in member variable '_focal_length'
+  // --------------------------------------------------------------------------
+  _focal_length( IMAGE_WIDTH2 / tan(HFOV_DEFAULT_/2.0f))
 {
   // --------------------------------------------------------------------------
 	// TODO subscribe to uORB topics:
@@ -22,6 +24,14 @@ TargetDetector::TargetDetector() :
   _attitude_sub = orb_subscribe(ORB_ID(vehicle_attitude));
   _position_sub = orb_subscribe(ORB_ID(vehicle_local_position));
   _target_position_image_sub = orb_subscribe(ORB_ID(target_position_image));
+
+
+
+
+  // --------------------------------------------------------------------------
+  // TODO set uORB publishing handle '_target_position_pub' to nullptr
+  // --------------------------------------------------------------------------
+  _target_position_pub = nullptr;
 }
 
 void TargetDetector::update()
