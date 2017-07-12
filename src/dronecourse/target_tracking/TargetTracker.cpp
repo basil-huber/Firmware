@@ -7,7 +7,6 @@
  */
 
 #include "TargetTracker.hpp"
-#include <matrix/math.hpp>
 #include <uORB/topics/target_position_ned.h>
 #include <float.h>
 
@@ -16,10 +15,7 @@
 #include <iostream>
 
 TargetTracker::TargetTracker(float dt) :
-    _target_position_pub(nullptr),
     _target_position_filtered_pub(nullptr),
-    _focal_length(IMAGE_WIDTH2 / tan(HFOV_DEFAULT_/2.0f)),
-    _target_id(0),
     _p_kal_sys_noise {param_find("KAL_SYS_NOISE_X"),
                       param_find("KAL_SYS_NOISE_Y"),
                       param_find("KAL_SYS_NOISE_Z"),
@@ -34,11 +30,9 @@ TargetTracker::TargetTracker(float dt) :
 {
   // --------------------------------------------------------------------------
 	// TODO subscribe to uORB topics:
-  //  target_position_image messages, vehicle_attitude, vehicle_local_position
+  //  target_position_ned
   // --------------------------------------------------------------------------
-  _attitude_sub = orb_subscribe(ORB_ID(vehicle_attitude));
-  _position_sub = orb_subscribe(ORB_ID(vehicle_local_position));
-  _target_position_image_sub = orb_subscribe(ORB_ID(target_position_image));
+  _target_pos_sub = orb_subscribe(ORB_ID(target_position_ned));
 
   // set up kalman filter
   const uint8_t m = 6;  // size of state vector
@@ -61,7 +55,6 @@ TargetTracker::TargetTracker(float dt) :
 void TargetTracker::update()
 {
   update_parameters();
-  update_subscriptions();
   
   _kf.predict();
 
@@ -71,48 +64,20 @@ void TargetTracker::update()
 
   bool new_measure = false;
   // ------------------------------------------------------------
-  // TODO check if we have a new _target_position_image message
+  // TODO check if we have a new target_position_ned message
   // and set new_measure accordingly
   // ------------------------------------------------------------
-  orb_check(_target_position_image_sub, &new_measure);
+  orb_check(_target_pos_sub, &new_measure);
   if(new_measure)
   {
+    PX4_INFO("Received new target_pos");
     // --------------------------------------------------------------------
     // TODO copy message content to a local variable
     // --------------------------------------------------------------------
-    struct target_position_image_s target_pos;
-    orb_copy(ORB_ID(target_position_image),_target_position_image_sub, &target_pos);
+    struct target_position_ned_s target_pos;
+    orb_copy(ORB_ID(target_position_ned),_target_pos_sub, &target_pos);
 
-    // --------------------------------------------------------------------
-    // TODO find the target location in camera coordinates and store it
-    //      as local variable of type matrix::Vector3f
-    // --------------------------------------------------------------------
-    matrix::Vector3f target_pos_if(target_pos.x - IMAGE_WIDTH2, target_pos.y - IMAGE_HEIGHT2, _focal_length); // target position in image frame
-    float scale = target_pos.dist / target_pos_if.norm();
-    target_pos_if *= scale;
-
-
-    // --------------------------------------------------------------------
-    // TODO convert to NED camera frame using quaternions from euler angles
-    // --------------------------------------------------------------------
-    matrix::Quaternion<float> image_rot(matrix::Euler<float>(0.0f, -M_PI/2.0, -M_PI/2.0));
-    matrix::Vector3f target_pos_cf = image_rot.conjugate(target_pos_if);
-
-    // --------------------------------------------------------------------
-    // TODO convert to the drone's body frame using the gimbal angles
-    // --------------------------------------------------------------------
-    matrix::Quaternion<float> camera_rot(matrix::Euler<float>(0.0f, target_pos.pitch, target_pos.yaw));
-    matrix::Vector3f target_pos_bf = camera_rot.conjugate_inversed(target_pos_cf);
-
-    // --------------------------------------------------------------------
-    // TODO convert to NED camera frame using quaternions from euler angles
-    // --------------------------------------------------------------------
-    matrix::Vector3f target_pos_lf = _att_vehicle.conjugate_inversed(target_pos_bf);
-    target_pos_lf += _pos_vehicle;
-
-
-    pack_target_position(pos_msg, target_pos_lf);
-    orb_publish_auto(ORB_ID(target_position_ned), &_target_position_pub, &pos_msg, &instance, ORB_PRIO_HIGH);
+    matrix::Vector3f target_pos_lf(target_pos.x, target_pos.y, target_pos.z);
 
     _kf.correct(target_pos_lf);
   }
@@ -123,33 +88,6 @@ void TargetTracker::update()
   orb_publish_auto(ORB_ID(target_position_ned_filtered), &_target_position_filtered_pub, &pos_msg, &instance, ORB_PRIO_HIGH);
 }
 
-
-
-void TargetTracker::update_subscriptions()
-{
-  //--------------------------------------------------------------------------------------
-  // TODO update subscriptions for vehicle_attitude as well as for vehicle_local_position
-  //   and update the member variables _att_vehicle and _pos_vehicle
-  // -------------------------------------------------------------------------------------
-  bool updated;
-  orb_check(_attitude_sub, &updated);
-  if(updated)
-  {
-    vehicle_attitude_s attitude_msg;
-    orb_copy(ORB_ID(vehicle_attitude), _attitude_sub, &attitude_msg);
-    _att_vehicle = matrix::Quaternion<float>(attitude_msg.q);
-  }
-
-  orb_check(_position_sub, &updated);
-  if(updated)
-  {
-    vehicle_local_position_s pos_msg;
-    orb_copy(ORB_ID(vehicle_local_position), _position_sub, &pos_msg);
-    _pos_vehicle(0) = pos_msg.x;
-    _pos_vehicle(1) = pos_msg.y;
-    _pos_vehicle(2) = pos_msg.z;
-  }
-}
 
 void TargetTracker::update_parameters()
 {
@@ -192,23 +130,6 @@ void TargetTracker::update_parameters()
 }
 
 
-void TargetTracker::pack_target_position(struct target_position_ned_s& pos_msg, const matrix::Vector3f& pos)
-{
-  pos_msg.x       = pos(0);
-  pos_msg.y       = pos(1);
-  pos_msg.z       = pos(2);
-  pos_msg.vx      = 0;
-  pos_msg.vy      = 0;
-  pos_msg.vz      = 0;
-  pos_msg.var_x   = 0;
-  pos_msg.var_x   = 0;
-  pos_msg.var_x   = 0;
-  pos_msg.var_vx  = 0;
-  pos_msg.var_vy  = 0;
-  pos_msg.var_vz  = 0;
-  pos_msg.target_id = _target_id;
-}
-
 void TargetTracker::pack_target_position(struct target_position_ned_s& pos_msg, const matrix::Vector<float,6>& pos_vel, const matrix::Vector<float,6>& variance)
 {
   pos_msg.x       = pos_vel(0);
@@ -224,5 +145,5 @@ void TargetTracker::pack_target_position(struct target_position_ned_s& pos_msg, 
   pos_msg.var_vy  = variance(4);
   pos_msg.var_vz  = variance(5);
 
-  pos_msg.target_id = _target_id;
+  pos_msg.target_id = 0;
 }

@@ -9,18 +9,10 @@
 #pragma once
 // #include <poll.h>
 #include <px4_posix.h>
-#include <uORB/topics/target_position_image.h>
-
-#include <uORB/topics/vehicle_attitude.h>
+#include <uORB/topics/target_position_ned.h>
 #include <uORB/Subscription.hpp>
 
 # include "Kalman.hpp"
-
-
-//#include <uORB/uORB.h>
-
-const static float HFOV_DEFAULT_ = 1.0f;       // horizontal field of view [rad]
-
 
 class TargetTracker
 {
@@ -33,36 +25,19 @@ public:
 
 private:
     void update_parameters();
-    void update_subscriptions();
-	void pack_target_position(struct target_position_ned_s& pos_msg, const matrix::Vector3f& pos);
     void pack_target_position(struct target_position_ned_s& pos_msg, const matrix::Vector<float,6>& pos_vel, const matrix::Vector<float,6>& variance);
 
     // -------------------------------------------------------------------
     // TODO add uORB subscriptions for
-    // vehicle_attitude, vehicle_local_position and target_position_image
+    // target_position_ned
     // -------------------------------------------------------------------
-    int _attitude_sub;
-    int _position_sub;
-    int _target_position_image_sub;
-    
+    int _target_pos_sub;    
 	
     // uORB publications
-    orb_advert_t   _target_position_pub;
-	orb_advert_t   _target_position_filtered_pub;
-
-    // vehicle attitude and position (from uORB)
-    matrix::Quaternion<float> _att_vehicle;
-    matrix::Vector3f          _pos_vehicle;
-
-    // camera parameters
-    const static uint16_t IMAGE_WIDTH2 = 640/2;	// half image width
-    const static uint16_t IMAGE_HEIGHT2 = 480/2;	// half image height
-    const float _focal_length;
+    orb_advert_t   _target_position_filtered_pub;
 
     // kalman filter
     KalmanFilter<6,3> _kf;
-
-    int _target_id;
 
     // onboard parameter handles
     param_t _p_kal_sys_noise[6];

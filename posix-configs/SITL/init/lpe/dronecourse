@@ -125,10 +125,10 @@ offboard_controller start
 dronecourse start
 sleep 5
 commander takeoff
+target_detection start
 target_tracking start
 dronecourse gimbal auto
 sleep 1
 commander mode offboard
-#dronecourse follow
-dronecourse pos 0 100 -10
+dronecourse follow
 

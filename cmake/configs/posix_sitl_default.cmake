@@ -133,6 +133,7 @@ set(config_module_list
 	#
 	dronecourse/controllers
 	dronecourse/target_tracking
+	dronecourse/target_detection
 	dronecourse/offboard_controller
 
 	#
