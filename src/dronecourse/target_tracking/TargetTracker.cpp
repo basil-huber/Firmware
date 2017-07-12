@@ -70,7 +70,6 @@ void TargetTracker::update()
   orb_check(_target_pos_sub, &new_measure);
   if(new_measure)
   {
-    PX4_INFO("Received new target_pos");
     // --------------------------------------------------------------------
     // TODO copy message content to a local variable
     // --------------------------------------------------------------------
